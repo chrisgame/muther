@@ -23,45 +23,33 @@ class GoogleAnalytics
     @web_property_id = config[:web_property]
     @date_range = {start_date: start_date, end_date: end_date}
     
-    VCR.use_cassette('garb_login') do
-      Garb::Session.login config[:user_name], config[:password]
-    end
+    Garb::Session.login config[:user_name], config[:password]
     
     get_profile
   end
 
   def get_profile 
-    VCR.use_cassette('garb_get_profile') do
-      @profile = Garb::Management::Profile.all.detect {|profile| profile.web_property_id == @web_property_id}
-    end
+    @profile = Garb::Management::Profile.all.detect {|profile| profile.web_property_id == @web_property_id}
   end
   
   def get_unique_pageviews
-    VCR.use_cassette('garb_get_unique_pageviews') do
-      result = UniquePageViewsReport.results(@profile, @date_range)
-      result.first.unique_pageviews
-    end 
+    result = UniquePageViewsReport.results(@profile, @date_range)
+    result.first.unique_pageviews
   end
 
   def get_unique_visitors
-    VCR.use_cassette('garb_get_unique_visitors') do
-      result = UniqueVisitorsReport.results(@profile, @date_range)
-      result.first.visitors
-    end
+    result = UniqueVisitorsReport.results(@profile, @date_range)
+    result.first.visitors
   end
 
   def get_average_page_load_time
-    VCR.use_cassette('garb_get_average_page_load_time') do
-      result = AveragePageLoadTimeReport.results(@profile, @date_range)
-      result.first.avg_page_load_time
-    end
+    result = AveragePageLoadTimeReport.results(@profile, @date_range)
+    result.first.avg_page_load_time
   end
 
   def get_percentage_of_new_visits
-    VCR.use_cassette('garb_get_percentage_of_new_visits') do
-      result = PercentageOfNewVisits.results(@profile, @date_range)
-      result.first.percent_new_visits
-    end
+    result = PercentageOfNewVisits.results(@profile, @date_range)
+    result.first.percent_new_visits
   end
 
   def to_builder
