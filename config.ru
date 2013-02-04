@@ -4,9 +4,12 @@ Bundler.setup()
 require './lib/app'
 
 class Muther 
-  VCR.configure do |c|
-    c.cassette_library_dir = 'fixtures/vcr_cassettes/offline'
-    c.hook_into :webmock
+
+  if ENV['RACK_ENV'] == 'offline'
+    VCR.configure do |c|
+      c.cassette_library_dir = 'fixtures/vcr_cassettes/offline'
+      c.hook_into :webmock
+    end
   end
  
   configure do

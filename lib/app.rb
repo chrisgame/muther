@@ -11,6 +11,7 @@ require 'yaml'
 require 'jbuilder'
 require_relative 'new_relic'
 require_relative 'google_analytics'
+require_relative 'team_city'
 
 class Muther < Sinatra::Base
 
@@ -45,6 +46,19 @@ class Muther < Sinatra::Base
         begin
           google_analytics = GoogleAnalytics.new start_date, end_date, CONFIG[key][:google_analytics]
           eval("json.#{key.to_s} google_analytics.to_builder")
+        rescue
+          eval("json.#{key.to_s}")
+        end
+      end
+    end
+  end
+
+  get '/team-city.json' do
+    Jbuilder.encode do |json|
+      CONFIG.keys.each do |key|
+        begin
+          team_city = TeamCity.new CONFIG[key][:team_city]
+          eval("json.#{key.to_s} team_city.to_builder")
         rescue
           eval("json.#{key.to_s}")
         end
