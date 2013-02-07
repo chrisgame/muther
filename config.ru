@@ -13,8 +13,8 @@ class Muther
   end
  
   configure do
+    set :public, 'public'
     CONFIG = YAML::load(File.open('sites.yaml'))
-    
   end 
 end
 

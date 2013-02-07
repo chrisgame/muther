@@ -9,9 +9,11 @@ require 'garb'
 require 'haml'
 require 'yaml'
 require 'jbuilder'
+require 'time'
 require_relative 'new_relic'
 require_relative 'google_analytics'
 require_relative 'team_city'
+require_relative 'heroku'
 
 class Muther < Sinatra::Base
 
@@ -59,6 +61,21 @@ class Muther < Sinatra::Base
         begin
           team_city = TeamCity.new CONFIG[key][:team_city]
           eval("json.#{key.to_s} team_city.to_builder")
+        rescue
+          eval("json.#{key.to_s}")
+        end
+      end
+    end
+  end
+
+  get '/heroku.json' do
+    start_date = Time.parse('2011-02-01')
+    end_date = Time.parse('2013-02-02')
+    Jbuilder.encode do |json|
+      CONFIG.keys.each do |key|
+        begin
+          heroku = Heroku.new start_date, end_date, CONFIG[key][:heroku]
+          eval("json.#{key.to_s} heroku.to_builder")
         rescue
           eval("json.#{key.to_s}")
         end
