@@ -1,0 +1,30 @@
+@mixin circle{
+  height: 150px;
+  -moz-border-radius:75px;
+  -webkit-border-radius:75px;
+  width: 150px;
+}
+@mixin red-circle{
+  @include circle;
+  background-color: red;
+}
+@mixin amber-circle{
+  @include circle;
+  background-color: yellow;
+}
+@mixin green-circle{
+  @include circle;
+  background-color: green;
+}
+@mixin grey-circle{
+  @include circle;
+  background-color: grey;
+}
+
+.build-status.failure{
+  @include red-circle;
+}
+.build-status.success{
+  @include green-circle;
+}
+

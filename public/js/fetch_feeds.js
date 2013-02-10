@@ -9,10 +9,19 @@ function parseIntNegForNull(value){
   };
 };
 
+function parseIntZeroForNull(value){
+  result = parseInt(value);
+  if (isNaN(result)){
+    return 0
+  }else{
+    return result
+  };
+};
+
 function update_list(){
   $('#buildList').html('');
   $.each(sites, function(index, value){
-    $('#buildList').append('<li id="'+value.name+'"><span class="uniqueVisitors">'+value.unique_visitors+'</span><h2>'+value.name+'</h2><span class="buildStatus">'+value.build_status+'</span><span class="apdex">'+value.apdex+'</span><span class="averagePageLoadTime">'+value.average_page_load_time+'</span><span class="releaseCount">'+value.release_count+'</span></li>');
+    $('#buildList').append('<li id="'+value.name+'"><span class="unique-visitors counter-analog" data-direction="up" data-interval="0.1" data-format="99999999" data-stop="'+parseIntZeroForNull(value.unique_visitors)+'">'+parseIntZeroForNull(value.unique_visitors)+'</span><h2>'+value.name+'</h2><p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/><span class="apdex">'+value.apdex+'</span><span class="average-page-load-time">'+value.average_page_load_time+'</span><span class="release-count counter-analog" data_direction="up" data-interval="1" data-format="99" data-stop="'+parseIntZeroForNull(value.release_count)+'">0</span></li>');
   });
   console.log('updated list');
 }
@@ -81,5 +90,6 @@ $(function(){
         update_list()
       })
     })
+  $('.unique-visitors, .release-count').counter();
 });(jQuery);
 

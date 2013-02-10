@@ -1,0 +1,13 @@
+.build-status.failure {
+  height: 150px;
+  -moz-border-radius: 75px;
+  -webkit-border-radius: 75px;
+  width: 150px;
+  background-color: red; }
+
+.build-status.success {
+  height: 150px;
+  -moz-border-radius: 75px;
+  -webkit-border-radius: 75px;
+  width: 150px;
+  background-color: green; }

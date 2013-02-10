@@ -1,3 +1,4 @@
 sites.yaml
 *.swp
 fixtures/vcr_cassettes/
+.sass-cache
