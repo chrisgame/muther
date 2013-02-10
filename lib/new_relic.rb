@@ -41,6 +41,10 @@ class NewRelic
     response.body_str
   end
 
+  def get_thresholds
+    response = call_new_relic "https://api.newrelic.com/api/v1/accounts/#{@account_id}/applications/#{@application_id}/thresholds.xml"
+    {caution_value: XmlSimple.xml_in(response.body_str)['threshold'][0]['caution-value'][0],critical_value: XmlSimple.xml_in(response.body_str)['threshold'][0]['critical-value'][0]} 
+  end
 
   def call_new_relic url
     Curl::Easy.perform(url) do |curl|
@@ -51,6 +55,9 @@ class NewRelic
   def to_builder
     Jbuilder.new do |new_relic|
       new_relic.apdex get_apdex
+      thresholds = get_thresholds
+      new_relic.caution_threshold = thresholds[:caution_value]
+      new_relic.critical_threshold = thresholds[:critical_value]
     end
   end
 end
