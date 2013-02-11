@@ -18,10 +18,30 @@ function parseIntZeroForNull(value){
   };
 };
 
+function apdexStatus(cautionValue, criticalValue, value){
+  if (value <= criticalValue){
+    return 'failure'
+  }else if (value <= cautionValue){
+    return 'caution'
+  }else if (isNaN(value)){
+    return 'undefined'
+  }else{
+    return 'success'
+  }
+};
+
 function update_list(){
   $('#buildList').html('');
   $.each(sites, function(index, value){
-    $('#buildList').append('<li id="'+value.name+'"><span class="unique-visitors counter-analog" data-direction="up" data-interval="0.1" data-format="99999999" data-stop="'+parseIntZeroForNull(value.unique_visitors)+'">'+parseIntZeroForNull(value.unique_visitors)+'</span><h2>'+value.name+'</h2><p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/><span class="apdex">'+value.apdex+'</span><span class="average-page-load-time">'+value.average_page_load_time+'</span><span class="release-count counter-analog" data_direction="up" data-interval="1" data-format="99" data-stop="'+parseIntZeroForNull(value.release_count)+'">0</span></li>');
+    list_item = '<li id="'+value.name+'">'+
+      '<span class="unique-visitors counter-analog" data-direction="up" data-interval="0.1" data-format="99999999" data-stop="'+parseIntZeroForNull(value.unique_visitors)+'">'+parseIntZeroForNull(value.unique_visitors)+'</span>'+
+      '<h2>'+value.name+'</h2>'+
+      '<p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/>'+
+      '<span class="apdex '+apdexStatus(parseFloat(value.apdex_caution_value), parseFloat(value.apdex_critical_value), parseFloat(value.apdex))+'" data-caution-value="'+value.apdex_caution_value+'" data-critical-value="'+value.apdex_critical_value+'">'+value.apdex+'</span>'+
+      '<span class="average-page-load-time">'+value.average_page_load_time+'</span>'+
+      '<span class="release-count counter-analog" data_direction="up" data-interval="1" data-format="99" data-stop="'+parseIntZeroForNull(value.release_count)+'">0</span>'+
+      '</li>'
+    $('#buildList').append(list_item);
   });
   console.log('updated list');
 }
@@ -49,6 +69,8 @@ muther.feeds= {
     $.getJSON('new-relic.json', function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.apdex = value.apdex};});
+        $.grep(sites, function(site){if (site.name == key){site.apdex_caution_value = value.caution_value};});
+        $.grep(sites, function(site){if (site.name == key){site.apdex_critical_value = value.critical_value};});
       });
     });
     console.log('fetched from new relic');

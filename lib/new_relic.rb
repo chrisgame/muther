@@ -56,8 +56,8 @@ class NewRelic
     Jbuilder.new do |new_relic|
       new_relic.apdex get_apdex
       thresholds = get_thresholds
-      new_relic.caution_threshold = thresholds[:caution_value]
-      new_relic.critical_threshold = thresholds[:critical_value]
+      new_relic.caution_value thresholds[:caution_value]
+      new_relic.critical_value thresholds[:critical_value]
     end
   end
 end
