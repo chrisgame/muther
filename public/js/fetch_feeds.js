@@ -42,12 +42,18 @@ function pageLoadStatus(cautionValue, criticalValue, value){
   }
 }
 
+function prettyText(text){
+  var with_spaces = text.replace("_", " ");
+  var capitalised = with_spaces.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+  return capitalised
+}
+
 function update_list(){
   $('#buildList').html('');
   $.each(sites, function(index, value){
     list_item = '<li id="'+value.name+'">'+
       '<span class="unique-visitors counter-analog" data-direction="up" data-interval="0.1" data-format="99999999" data-stop="'+parseIntZeroForNull(value.unique_visitors)+'">'+parseIntZeroForNull(value.unique_visitors)+'</span>'+
-      '<h2>'+value.name+'</h2>'+
+      '<h2>'+prettyText(value.name)+'</h2>'+
       '<p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/>'+
       '<span class="apdex '+apdexStatus(parseFloat(value.apdex_caution_value), parseFloat(value.apdex_critical_value), parseFloat(value.apdex))+'" data-caution-value="'+value.apdex_caution_value+'" data-critical-value="'+value.apdex_critical_value+'">'+value.apdex+'</span>'+
       '<span class="average-page-load-time '+pageLoadStatus(1.5, 2.5, parseFloat(value.average_page_load_time).toFixed(1))+'" data-caution-value="1.5" data-critical-value="2.5">'+parseFloat(value.average_page_load_time).toFixed(1)+'</span>'+
