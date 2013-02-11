@@ -30,6 +30,18 @@ function apdexStatus(cautionValue, criticalValue, value){
   }
 };
 
+function pageLoadStatus(cautionValue, criticalValue, value){
+  if (value >= criticalValue){
+    return 'failure'
+  }else if (value >= cautionValue){
+    return 'caution'
+  }else if (isNaN(value)){
+    return 'undefined'
+  }else{
+    return 'success'
+  }
+}
+
 function update_list(){
   $('#buildList').html('');
   $.each(sites, function(index, value){
@@ -38,7 +50,7 @@ function update_list(){
       '<h2>'+value.name+'</h2>'+
       '<p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/>'+
       '<span class="apdex '+apdexStatus(parseFloat(value.apdex_caution_value), parseFloat(value.apdex_critical_value), parseFloat(value.apdex))+'" data-caution-value="'+value.apdex_caution_value+'" data-critical-value="'+value.apdex_critical_value+'">'+value.apdex+'</span>'+
-      '<span class="average-page-load-time">'+value.average_page_load_time+'</span>'+
+      '<span class="average-page-load-time '+pageLoadStatus(1.5, 2.5, parseFloat(value.average_page_load_time).toFixed(1))+'" data-caution-value="1.5" data-critical-value="2.5">'+parseFloat(value.average_page_load_time).toFixed(1)+'</span>'+
       '<span class="release-count counter-analog" data_direction="up" data-interval="1" data-format="99" data-stop="'+parseIntZeroForNull(value.release_count)+'">0</span>'+
       '</li>'
     $('#buildList').append(list_item);
