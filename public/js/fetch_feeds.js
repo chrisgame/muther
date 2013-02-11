@@ -68,48 +68,66 @@ var sites = [];
 muther.feeds= {
 
   init: function(){
+    var defObj = $.Deferred();
     $.getJSON('team-city.json', function(data){
       $.each(data, function(key, value){
         sites.push({'name' : key})
       });
+      defObj.resolve();
     });
     console.log('initialized');
+    return defObj.promise();
   },
   fetch_from_team_city: function(){
+    var defObj = $.Deferred();
     $.getJSON('team-city.json', function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.build_status = value.build_status};});
       });
+      console.log('finished team city loop')
+      defObj.resolve();
     });
     console.log('fetched from team city');
+    return defObj.promise();
   },
   fetch_from_new_relic: function(){
+    var defObj = $.Deferred();
     $.getJSON('new-relic.json', function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.apdex = value.apdex};});
         $.grep(sites, function(site){if (site.name == key){site.apdex_caution_value = value.caution_value};});
         $.grep(sites, function(site){if (site.name == key){site.apdex_critical_value = value.critical_value};});
       });
+      console.log('finished new relic loop')
+      defObj.resolve();
     });
     console.log('fetched from new relic');
+    return defObj.promise();
   },
   fetch_from_google_analytics: function(){
+    var defObj = $.Deferred();
     $.getJSON('google-analytics.json', function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.unique_visitors = value.unique_visitors};});
         $.grep(sites, function(site){if (site.name == key){site.average_page_load_time = value.average_page_load_time};});
-        muther.feeds.sort();
       });
+      console.log('finished google analytics loop')
+      defObj.resolve();
     });
     console.log('fetched from google analytics');
+    return defObj.promise();
   },
   fetch_from_heroku: function(){
+    var defObj = $.Deferred();
     $.getJSON('heroku.json', function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.release_count = value.release_count};});
       });
+      console.log('finished heroku loop')
+      defObj.resolve();
     });
     console.log('fetched from heroku');
+    return defObj.promise();
   },
   sort: function(){
     sites.sort(function(a,b) { return parseIntNegForNull(b.unique_visitors) - parseIntNegForNull(a.unique_visitors)});
@@ -127,9 +145,10 @@ $(function(){
        ,muther.feeds.fetch_from_google_analytics()
        ,muther.feeds.fetch_from_heroku()
       ).done(function(){
+        muther.feeds.sort();
         update_list()
+        $('.unique-visitors, .release-count').counter();
       })
     })
-  $('.unique-visitors, .release-count').counter();
 });(jQuery);
 
