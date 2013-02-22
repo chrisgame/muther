@@ -25,6 +25,13 @@ class Muther < Sinatra::Base
    haml :index 
   end
 
+  get '/monitor' do
+    case params[:view]
+      when 'list'
+        haml :list
+    end
+  end
+
   get '/new-relic.json' do
     start_date = Date.new(2013,02,01)
     end_date = Date.new(2013,02,02)
