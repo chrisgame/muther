@@ -67,6 +67,12 @@ function update_list(){
   console.log('updated list');
 }
 
+function update_display(){
+  update_list()
+  $('.unique-visitors, .release-count').counter();
+  $('.release-count').counter('play');
+}
+
 var sites = [];
 muther.feeds= {
 
@@ -172,25 +178,74 @@ $(function(){
   start_of_today.setSeconds(0);
   console.log('Start of today '+start_of_today)
   
-  var end_of_today = current_date_time;
+  var end_of_today = muther.feeds.current_date_time();
   end_of_today.setHours(23);
   end_of_today.setMinutes(59);
   end_of_today.setSeconds(59);
   console.log('End of today '+end_of_today)
+  
+  var start_of_yesterday = muther.feeds.current_date_time();
+  start_of_yesterday.setDate(start_of_yesterday.getDate()-1);
+  start_of_yesterday.setHours(0);
+  start_of_yesterday.setMinutes(0);
+  start_of_yesterday.setSeconds(0);
+  console.log('Start of yesterday '+start_of_yesterday)
+  
+  var end_of_yesterday = muther.feeds.current_date_time();
+  end_of_yesterday.setDate(end_of_yesterday.getDate()-1);
+  end_of_yesterday.setHours(23);
+  end_of_yesterday.setMinutes(59);
+  end_of_yesterday.setSeconds(59);
+  console.log('End of yesterday '+end_of_yesterday)
 
   $.when(muther.feeds.init())
     .done(function(){
       $.when(
         muther.feeds.fetch_from_team_city()
        ,muther.feeds.fetch_from_new_relic(one_hour_ago, current_date_time)
-       ,muther.feeds.fetch_from_google_analytics(start_of_today, end_of_today)
+       ,muther.feeds.fetch_from_google_analytics(start_of_yesterday, end_of_yesterday)
        ,muther.feeds.fetch_from_heroku(start_of_today, end_of_today)
       ).done(function(){
         muther.feeds.sort();
-        update_list()
-        $('.unique-visitors, .release-count').counter();
-        $('.release-count').counter('play');
+        update_display();
       })
     })
+
+  function fetch_from_team_city_and_update_display(){
+    $.when(muther.feeds.fetch_from_team_city()).done(function(){
+      muther.feeds.sort();
+      update_display();
+      console.log('Fetched from team city')
+    });
+  }
+  
+  function fetch_from_new_relic_and_update_display(){
+    $.when(muther.feeds.fetch_from_new_relic(one_hour_ago, current_date_time)).done(function(){
+      muther.feeds.sort();
+      update_display();
+      console.log('Fetched from new relic')
+    });
+  }
+
+  function fetch_from_google_analytics_and_update_display(){
+    $.when(muther.feeds.fetch_from_google_analytics(start_of_yesterday, end_of_yesterday)).done(function(){
+      muther.feeds.sort();
+      update_display();
+      console.log('Fetched from google analytics')
+    });
+  }
+  
+  function fetch_from_heroku_and_update_display(){
+    $.when(muther.feeds.fetch_from_heroku(start_of_today, end_of_today)).done(function(){
+      muther.feeds.sort();
+      update_display();
+      console.log('Fetched from heroku')
+    });
+  }
+
+  window.setInterval(fetch_from_team_city_and_update_display(), 30000);
+  window.setInterval(fetch_from_new_relic_and_update_display(), 60000);
+  window.setInterval(fetch_from_google_anaylitics_and_update_display(), 86400000);
+  window.setInterval(fetch_from_heroku_and_update_display(), 86400000);
 });(jQuery);
 
