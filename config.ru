@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'bundler'
 Bundler.setup()
+
+require 'pp'
 require './lib/app'
 
 class Muther 
@@ -13,8 +15,9 @@ class Muther
   end
  
   configure do
-    set :public, 'public'
+    set :public_folder, 'public'
     CONFIG = YAML::load(File.open('sites.yaml'))
+    pp CONFIG
   end 
 end
 

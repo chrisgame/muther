@@ -93,9 +93,10 @@ muther.feeds= {
     console.log('fetched from team city');
     return defObj.promise();
   },
-  fetch_from_new_relic: function(){
+  fetch_from_new_relic: function(startDate, endDate){
+    console.log('fetching from new relic feed for the period '+startDate+' to '+endDate);
     var defObj = $.Deferred();
-    $.getJSON('new-relic.json', function(data){
+    $.getJSON('new-relic.json?startdate='+muther.feeds.format_date(startDate)+'&enddate='+muther.feeds.format_date(endDate), function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.apdex = value.apdex};});
         $.grep(sites, function(site){if (site.name == key){site.apdex_caution_value = value.caution_value};});
@@ -107,9 +108,10 @@ muther.feeds= {
     console.log('fetched from new relic');
     return defObj.promise();
   },
-  fetch_from_google_analytics: function(){
+  fetch_from_google_analytics: function(startDate, endDate){
+    console.log('fetching from google analytics feed for the period '+startDate+' to '+endDate);
     var defObj = $.Deferred();
-    $.getJSON('google-analytics.json', function(data){
+    $.getJSON('google-analytics.json?startdate='+muther.feeds.format_date(startDate)+'&enddate='+muther.feeds.format_date(endDate), function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.unique_visitors = value.unique_visitors};});
         $.grep(sites, function(site){if (site.name == key){site.average_page_load_time = value.average_page_load_time};});
@@ -120,9 +122,10 @@ muther.feeds= {
     console.log('fetched from google analytics');
     return defObj.promise();
   },
-  fetch_from_heroku: function(){
+  fetch_from_heroku: function(startDate, endDate){
+    console.log('fetching from the heroku feed for the period '+startDate+' to '+endDate);
     var defObj = $.Deferred();
-    $.getJSON('heroku.json', function(data){
+    $.getJSON('heroku.json?startdate='+muther.feeds.format_date(startDate)+'&enddate='+muther.feeds.format_date(endDate), function(data){
       $.each(data, function(key, value){
         $.grep(sites, function(site){if (site.name == key){site.release_count = value.release_count};});
       });
@@ -137,16 +140,51 @@ muther.feeds= {
     update_list();
     console.log('sorted sites');
   },
+  current_date_time: function(){
+    if (app_mode == 'offline'){
+      date = new Date;
+      date.setYear('2013');
+      date.setMonth('01');
+      date.setDate('01');
+      date.setHours('00');
+      date.setMinutes('00');
+      date.setSeconds('00')
+      return date
+    }else{
+      return new Date;
+    };
+  },
+  format_date: function(date){
+    month = date.getMonth()+1;
+    return date.getFullYear()+'-'+month+'-'+date.getDate()+'T'+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds();
+  },
 };
 
 $(function(){
+  var current_date_time = muther.feeds.current_date_time();
+  var one_hour_ago = muther.feeds.current_date_time();
+  one_hour_ago.setHours(current_date_time.getHours()-1);
+  console.log('One hour ago '+one_hour_ago)
+  
+  var start_of_today = muther.feeds.current_date_time();
+  start_of_today.setHours(0);
+  start_of_today.setMinutes(0);
+  start_of_today.setSeconds(0);
+  console.log('Start of today '+start_of_today)
+  
+  var end_of_today = current_date_time;
+  end_of_today.setHours(23);
+  end_of_today.setMinutes(59);
+  end_of_today.setSeconds(59);
+  console.log('End of today '+end_of_today)
+
   $.when(muther.feeds.init())
     .done(function(){
       $.when(
         muther.feeds.fetch_from_team_city()
-       ,muther.feeds.fetch_from_new_relic()
-       ,muther.feeds.fetch_from_google_analytics()
-       ,muther.feeds.fetch_from_heroku()
+       ,muther.feeds.fetch_from_new_relic(one_hour_ago, current_date_time)
+       ,muther.feeds.fetch_from_google_analytics(start_of_today, end_of_today)
+       ,muther.feeds.fetch_from_heroku(start_of_today, end_of_today)
       ).done(function(){
         muther.feeds.sort();
         update_list()

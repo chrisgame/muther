@@ -33,23 +33,39 @@ class GoogleAnalytics
   end
   
   def get_unique_pageviews
-    result = UniquePageViewsReport.results(@profile, @date_range)
-    result.first.unique_pageviews
+    begin 
+      result = UniquePageViewsReport.results(@profile, @date_range)
+      result.first.unique_pageviews
+    rescue
+      return 'undefined'
+    end
   end
 
   def get_unique_visitors
-    result = UniqueVisitorsReport.results(@profile, @date_range)
-    result.first.visitors
+    begin
+      result = UniqueVisitorsReport.results(@profile, @date_range)
+      result.first.visitors
+    rescue
+      return 'undefined'
+    end
   end
 
   def get_average_page_load_time
-    result = AveragePageLoadTimeReport.results(@profile, @date_range)
-    result.first.avg_page_load_time
+    begin
+      result = AveragePageLoadTimeReport.results(@profile, @date_range)
+      result.first.avg_page_load_time
+    rescue
+      return 'undefined'
+    end
   end
 
   def get_percentage_of_new_visits
-    result = PercentageOfNewVisits.results(@profile, @date_range)
-    result.first.percent_new_visits
+    begin
+      result = PercentageOfNewVisits.results(@profile, @date_range)
+      result.first.percent_new_visits
+    rescue
+      return 'undefined'
+    end
   end
 
   def to_builder

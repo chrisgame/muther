@@ -4,8 +4,8 @@ require 'json'
 
 class Heroku
   def initialize start_date, end_date, config = {}
-    @start_date = start_date
-    @end_date = end_date
+    @start_date = start_date.strftime '%Y/%m/%d %H:%M:%S %z'
+    @end_date = end_date.strftime '%Y/%m/%d %H:%M:%S %z'
     @api_key = config[:api_key]
     @app_name = config[:app_name]
   end
@@ -22,7 +22,7 @@ class Heroku
 
   def get_release_count
     response = call_heroku "https://api.heroku.com/apps/#{@app_name}/releases"
-    response.collect{|release| release['created_at']}.select{|time| (@start_date..@end_date).cover?(Time.parse(time))}.count
+    response.collect{|release| release['created_at']}.select{|time| (@start_date..@end_date).cover?(time)}.count
   end
 
   def to_builder
