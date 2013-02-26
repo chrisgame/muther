@@ -32,18 +32,34 @@ class Muther < Sinatra::Base
     end
   end
 
+  get '/config.json' do
+    content_type 'application/json'
+    CONFIG.to_json
+  end
+
   get '/new-relic.json' do
     start_date = DateTime.parse(params[:startdate])
     end_date = DateTime.parse(params[:enddate])
-    puts "New Relic from "+start_date.to_s+" to "+end_date.to_s
+    puts "Querying New Relic from "+start_date.to_s+" to "+end_date.to_s
+
     Jbuilder.encode do |json|
-      CONFIG.keys.each do |key|
+      unless params[:site].nil?
         begin
-          puts "Fetching from new relic for "+CONFIG[key][:new_relic][:api_key]
-          new_relic = NewRelic.new start_date, end_date, CONFIG[key][:new_relic]
-          eval("json.#{key.to_s} new_relic.to_builder")
+          puts "Fetching from new relic for "+params[:site]+ " using "+CONFIG[params[:site].to_sym][:new_relic][:api_key]
+          new_relic = NewRelic.new start_date, end_date, CONFIG[params[:site].to_sym][:new_relic]
+          eval("json.#{params[:site]} new_relic.to_builder")
         rescue
-          eval("json.#{key.to_s}")
+          eval("json.#{params[:site]}")
+        end
+      else
+        CONFIG.keys.each do |key|
+          begin
+            puts "Fetching from new relic for "+key.to_s+" using "+CONFIG[key][:new_relic][:api_key]
+            new_relic = NewRelic.new start_date, end_date, CONFIG[key][:new_relic]
+            eval("json.#{key.to_s} new_relic.to_builder")
+          rescue
+            eval("json.#{key.to_s}")
+          end
         end
       end
     end
