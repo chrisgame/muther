@@ -245,7 +245,7 @@ $(function(){
 
   window.setInterval(fetch_from_team_city_and_update_display(), 30000);
   window.setInterval(fetch_from_new_relic_and_update_display(), 60000);
-  window.setInterval(fetch_from_google_anaylitics_and_update_display(), 86400000);
+  window.setInterval(fetch_from_google_analytics_and_update_display(), 86400000);
   window.setInterval(fetch_from_heroku_and_update_display(), 86400000);
 });(jQuery);
 
