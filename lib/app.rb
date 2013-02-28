@@ -42,25 +42,11 @@ class Muther < Sinatra::Base
     end_date = DateTime.parse(params[:enddate])
     puts "Querying New Relic from "+start_date.to_s+" to "+end_date.to_s
 
-    Jbuilder.encode do |json|
-      unless params[:site].nil?
-        begin
-          puts "Fetching from new relic for "+params[:site]+ " using "+CONFIG[params[:site].to_sym][:new_relic][:api_key]
-          new_relic = NewRelic.new start_date, end_date, CONFIG[params[:site].to_sym][:new_relic]
-          eval("json.#{params[:site]} new_relic.to_builder")
-        rescue
-          eval("json.#{params[:site]}")
-        end
-      else
-        CONFIG.keys.each do |key|
-          begin
-            puts "Fetching from new relic for "+key.to_s+" using "+CONFIG[key][:new_relic][:api_key]
-            new_relic = NewRelic.new start_date, end_date, CONFIG[key][:new_relic]
-            eval("json.#{key.to_s} new_relic.to_builder")
-          rescue
-            eval("json.#{key.to_s}")
-          end
-        end
+    unless params[:site].nil?
+      fetch :new_relic, params[:site].to_sym, start_date, end_date
+    else
+      CONFIG.keys.each do |key|
+        fetch :new_relic, key, start_date, end_date
       end
     end
   end
@@ -116,6 +102,21 @@ class Muther < Sinatra::Base
   after do
     VCR.eject_cassette if ENV['RACK_ENV'] == 'offline'
   end
+
+  helpers do
+    def fetch source, site, start_date, end_date
+      Jbuilder.encode do |json|
+        begin
+          puts "Fetching from new relic for "+site.to_s+" using "+CONFIG[site][:new_relic][:api_key]
+          new_relic = NewRelic.new start_date, end_date, CONFIG[site][:new_relic]
+          eval("json.#{site.to_s} new_relic.to_builder")
+        rescue
+          eval("json.#{site.to_s}")
+        end
+      end
+    end 
+  end
+
 end
 
 
