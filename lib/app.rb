@@ -43,10 +43,14 @@ class Muther < Sinatra::Base
     puts "Querying New Relic from "+start_date.to_s+" to "+end_date.to_s
 
     unless params[:site].nil?
-      fetch :new_relic, params[:site].to_sym, start_date, end_date
+      Jbuilder.encode do |json|
+        fetch :new_relic, params[:site].to_sym, start_date, end_date, json
+      end
     else
-      CONFIG.keys.each do |key|
-        fetch :new_relic, key, start_date, end_date
+      Jbuilder.encode do |json|
+        CONFIG.keys.each do |key|
+          fetch :new_relic, key, start_date, end_date, json
+        end
       end
     end
   end
@@ -55,14 +59,15 @@ class Muther < Sinatra::Base
     start_date = DateTime.parse(params[:startdate])
     end_date = DateTime.parse(params[:enddate])
     puts "Google analytics from "+start_date.to_s+" to "+end_date.to_s
-    Jbuilder.encode do |json|
-      CONFIG.keys.each do |key|
-        begin
-          puts "Fetching from google analytics for "+CONFIG[key][:google_analytics][:web_property]
-          google_analytics = GoogleAnalytics.new start_date, end_date, CONFIG[key][:google_analytics]
-          eval("json.#{key.to_s} google_analytics.to_builder")
-        rescue
-          eval("json.#{key.to_s}")
+
+    unless params[:site].nil?
+      Jbuilder.encode do |json|
+        fetch :google_analytics, params[:site].to_sym, start_date, end_date, json
+      end
+    else
+      Jbuilder.encode do |json|
+        CONFIG.keys.each do |key|
+          fetch :google_analytics, key, start_date, end_date, json
         end
       end
     end
@@ -86,14 +91,15 @@ class Muther < Sinatra::Base
     start_date = DateTime.parse(params[:startdate])
     end_date = DateTime.parse(params[:enddate])
     puts "Heroku from "+start_date.to_s+" to "+end_date.to_s
-    Jbuilder.encode do |json|
-      CONFIG.keys.each do |key|
-        begin
-          puts "Fetching from heroku for "+CONFIG[key][:heroku][:app_name]
-          heroku = Heroku.new start_date, end_date, CONFIG[key][:heroku]
-          eval("json.#{key.to_s} heroku.to_builder")
-        rescue
-          eval("json.#{key.to_s}")
+
+    unless params[:site].nil?
+      Jbuilder.encode do |json|
+        fetch :heroku, params[:site].to_sym, start_date, end_date, json
+      end
+    else
+      Jbuilder.encode do |json|
+        CONFIG.keys.each do |key|
+          fetch :heroku, key, start_date, end_date, json
         end
       end
     end
@@ -104,16 +110,19 @@ class Muther < Sinatra::Base
   end
 
   helpers do
-    def fetch source, site, start_date, end_date
-      Jbuilder.encode do |json|
-        begin
-          puts "Fetching from new relic for "+site.to_s+" using "+CONFIG[site][:new_relic][:api_key]
-          new_relic = NewRelic.new start_date, end_date, CONFIG[site][:new_relic]
-          eval("json.#{site.to_s} new_relic.to_builder")
-        rescue
-          eval("json.#{site.to_s}")
-        end
-      end
+    def fetch source, site, start_date, end_date, json
+      source_class_name = get_class_name(source.to_s)
+	begin
+	  puts "Fetching from "+source.to_s+" for "+site.to_s
+	  source_class = eval("#{source_class_name}.new start_date, end_date, CONFIG[site][source]")
+	  eval("json.#{site.to_s} source_class.to_builder")
+	rescue
+	  eval("json.#{site.to_s}")
+	end
+    end
+
+    def get_class_name string
+      string.gsub('_',' ').split(' ').map(&:capitalize).join('')
     end 
   end
 

@@ -22,7 +22,7 @@ class GoogleAnalytics
   def initialize start_date, end_date, config = {}
     @web_property_id = config[:web_property]
     @date_range = {start_date: start_date, end_date: end_date}
-    
+   
     Garb::Session.login config[:user_name], config[:password]
     
     get_profile
@@ -70,10 +70,8 @@ class GoogleAnalytics
 
   def to_builder
     Jbuilder.new do |google_analytics|
-      google_analytics.unique_pageviews get_unique_pageviews
       google_analytics.unique_visitors get_unique_visitors
       google_analytics.average_page_load_time get_average_page_load_time
-      google_analytics.percentage_of_new_visits get_percentage_of_new_visits
     end
   end
 end
