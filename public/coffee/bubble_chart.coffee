@@ -1,0 +1,2 @@
+Bubbles = () ->
+  data = []

@@ -1,9 +1,10 @@
 require 'rubygems'
 require 'bundler'
-Bundler.setup()
+Bundler.require(:default, :app, ENV['RACK_ENV'].to_sym)
 
 require 'pp'
 require './lib/app'
+require './config/sprockets'
 
 class Muther 
 
@@ -13,9 +14,25 @@ class Muther
       c.hook_into :webmock
     end
   end
+
+  if ENV['RACK_ENV'] === 'offline'
+    require './config/sprockets'
+    assets = Muther::Assets::Environment.get File.realdirpath(".")
+    map('/assets') { run assets.index}
+  end
  
   configure do
-    set :public_folder, 'public'
+    set :production, ENV['RACK_ENV'] === 'production'
+    set :app_root, File.realdirpath('.')
+    set :assets, Muther::Assets::Environment.get(settings.app_root, settings.production)
+
+    Sprockets::Helpers.configure do |config|
+      config.environment = settings.assets
+      config.prefix      = '/assets'
+      config.digest      = true
+      config.public_path = settings.public_folder
+    end
+
     CONFIG = YAML::load(File.open('sites.yaml'))
     pp CONFIG
   end 

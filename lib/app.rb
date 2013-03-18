@@ -1,14 +1,10 @@
+require 'bundler'
+Bundler.require(:default, :app, ENV['RACK_ENV'].to_sym)
 require 'sinatra/base'
-require 'vcr'
 require 'net/http'
 require 'net/https'
 require 'uri'
-require 'xmlsimple'
-require 'pry'
-require 'garb'
-require 'haml'
 require 'yaml'
-require 'jbuilder'
 require 'time'
 require_relative 'new_relic'
 require_relative 'google_analytics'
@@ -29,6 +25,8 @@ class Muther < Sinatra::Base
     case params[:view]
       when 'list'
         haml :list
+      when 'bubbles'
+        haml :bubbles
     end
   end
 
