@@ -1,17 +1,58 @@
 require 'bundler'
-Bundler.require(:default, :app, ENV['RACK_ENV'].to_sym)
-require 'sinatra/base'
+Bundler.require
 require 'net/http'
 require 'net/https'
 require 'uri'
 require 'yaml'
 require 'time'
-require_relative 'new_relic'
-require_relative 'google_analytics'
-require_relative 'team_city'
-require_relative 'heroku'
+require_relative './api_wrappers/new_relic'
+require_relative './api_wrappers/google_analytics'
+require_relative './api_wrappers/team_city'
+require_relative './api_wrappers/heroku'
 
 class Muther < Sinatra::Base
+  if ENV['RACK_ENV'] == 'offline'
+    require 'vcr'
+    VCR.configure do |c|
+    c.cassette_library_dir = 'fixtures/vcr_cassettes/offline'
+    c.hook_into :webmock
+    end
+  end
+
+  set :sprockets, Sprockets::Environment.new(root)
+  set :precompile, [ /\w+(.js)$/, /\w+(.coffee)$/, /\w+(.css.scss)$/, /\w+(.css)$/ ]
+  set :assets_prefix, '/assets'
+  set :digest_assets, false
+  set(:assets_path) { File.join public_folder, assets_prefix }
+  
+  configure do
+    sprockets.append_path File.join(root, 'assets', 'stylesheets')
+    sprockets.append_path File.join(root, 'assets', 'javascripts')
+    sprockets.append_path File.join(root, 'assets', 'images')
+    sprockets.append_path File.join(public_folder, 'assets', 'ext')
+
+    if ENV['RACK_ENV'] != 'offline'
+      sprockets.js_compressor = YUI::JavaScriptCompressor.new
+      sprockets.css_compressor = YUI::CssCompressor.new
+    end
+
+    Sprockets::Helpers.configure do |config|
+      config.environment = sprockets
+      config.prefix      = assets_prefix
+      config.digest      = digest_assets
+      config.public_path = public_folder
+    end
+  end
+
+  helpers do
+    include Sprockets::Helpers
+  end
+
+
+  configure do
+    CONFIG = YAML::load(File.open('sites.yaml'))
+    pp CONFIG
+  end
 
   before do
     VCR.insert_cassette('all', :record => :new_episodes) if ENV['RACK_ENV'] == 'offline'

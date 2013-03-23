@@ -1,28 +1,19 @@
 source :rubygems
-gem 'sinatra'
 
-group :app do
-  gem 'garb'
-  gem 'haml'
-  gem 'curb'
-  gem 'jbuilder'
-  gem 'json'
-  gem 'sass'
-  gem 'sprockets-helpers'
-  gem 'xml-simple'
-end
-
-group :rackup do
-  gem 'thin'
-end
-
-group :assets do
-  gem 'sprockets'
-  gem 'sprockets-helpers'
-  gem 'coffee-script'
-  gem 'yui-compressor'
-  gem 'uglifier' 
-end
+gem 'sinatra', :require => 'sinatra/base'
+gem 'garb'
+gem 'haml'
+gem 'curb'
+gem 'jbuilder'
+gem 'json'
+gem 'sass'
+gem 'xml-simple'
+gem 'sprockets'
+gem 'sprockets-sass'
+gem 'sprockets-helpers'
+gem 'coffee-script'
+gem 'yui-compressor'
+gem 'thin'
 
 group :development, :offline do
   gem 'vcr'
@@ -32,4 +23,8 @@ group :development, :offline do
   gem 'pry'
   gem 'pry-remote'
   gem 'pry-nav'
+  gem 'guard'
+  gem 'guard-sprockets2'
+  gem 'rb-inotify', '~> 0.9', :require => false
+  gem 'therubyracer'
 end
