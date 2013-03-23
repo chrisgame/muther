@@ -2,10 +2,10 @@
 %html
   %head
 
-    %script{:src => javascript_path('jquery-1.9.1.min')}
-    %script{:src => javascript_path('fetch_feeds')}
-    %script{:src => javascript_path('jquery.counter')}
-    %script{:src => javascript_path('bubble_chart')}
+    %script{:rel => 'stylesheet', :src => javascript_path('jquery-1.9.1.min')}
+    %script{:rel => 'stylesheet', :src => javascript_path('fetch_feeds')}
+    %script{:rel => 'stylesheet', :src => javascript_path('jquery.counter')}
+    %script{:rel => 'stylesheet', :src => javascript_path('bubble_chart')}
     %title='Muther'
     :javascript
       var app_mode = "#{ENV['RACK_ENV']}"
