@@ -55,11 +55,11 @@ function update_list(){
       '<span class="unique-visitors counter-analog" data-direction="up" data-interval="0.1" data-format="999999" data-stop="'+parseIntZeroForNull(value.unique_visitors)+'">'+parseIntZeroForNull(value.unique_visitors)+'</span>'+
       '<h2>'+prettyText(value.name)+'</h2>'+
       '<p class="build-status '+value.build_status+'" data-status="'+value.build_status+'"/>'+
-      '<img class="trowel-icon" src="/images/trowel.png"/>'+
+      '<img class="trowel-icon" src="assets/trowel.png"/>'+
       '<p class="apdex '+apdexStatus(parseFloat(value.apdex_caution_value), parseFloat(value.apdex_critical_value), parseFloat(value.apdex))+'" data-caution-value="'+value.apdex_caution_value+'" data-critical-value="'+value.apdex_critical_value+'" data-value="'+value.apdex+'"></p>'+
-      '<img class="new-relic-icon" src="/images/newRelic.png"/>'+
+      '<img class="new-relic-icon" src="assets/newRelic.png"/>'+
       '<p class="average-page-load-time '+pageLoadStatus(1.5, 2.5, parseFloat(value.average_page_load_time).toFixed(1))+'" data-caution-value="1.5" data-critical-value="2.5" data-value="'+parseFloat(value.average_page_load_time).toFixed(1)+'"></p>'+
-      '<img class="downloads-icon" src="/images/downloads.png"/>'+
+      '<img class="downloads-icon" src="assets/downloads.png"/>'+
       '<span class="release-count counter-analog" data_direction="up" data-interval="10" data-format="99" data-stop="'+parseIntZeroForNull(value.release_count)+'">0</span>'+
       '</li>'
     $('#buildList').append(list_item);

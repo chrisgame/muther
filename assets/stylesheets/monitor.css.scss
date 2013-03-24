@@ -7,19 +7,19 @@
 }
 
 @mixin red-light{
-  background: url(/images/red.png) transparent no-repeat;
+  background: asset-url('assets/red.png') transparent no-repeat;
   @include light;
 }
 @mixin amber-light{
-  background: url(/images/amber.png) transparent no-repeat;
+  background: asset-url('assets/amber.png') transparent no-repeat;
   @include light;
 }
 @mixin green-light{
-  background: url(/images/green.png) transparent no-repeat;
+  background: asset-url('assets/green.png') transparent no-repeat;
   @include light;
 }
 @mixin black-light{
-  background: url(/images/black.png) transparent no-repeat;
+  background: asset-url('assets/black.png') transparent no-repeat;
   @include light;
 }
 

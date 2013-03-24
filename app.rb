@@ -20,7 +20,7 @@ class Muther < Sinatra::Base
   end
 
   set :sprockets, Sprockets::Environment.new(root)
-  set :precompile, [ /\w+(.js)$/, /\w+(.coffee)$/, /\w+(.css.scss)$/, /\w+(.css)$/ ]
+  set :precompile, [ /\w+(.js|.coffee|.css|.css.scss|.png)$/ ]
   set :assets_prefix, '/assets'
   set :digest_assets, false
   set(:assets_path) { File.join public_folder, assets_prefix }
