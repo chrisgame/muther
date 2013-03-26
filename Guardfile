@@ -16,3 +16,8 @@ guard('sprockets2',
   watch %r(^assets/.+$)
   watch 'app.rb'
 end
+
+guard :rspec do
+  watch(%r{^spec/.+_spec\.rb$})
+	watch(%r{^api-wrappers/(.+)\.rb$}) {|m| "spec/lib/#{m[1]}_spec.rb"}
+end

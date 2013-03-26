@@ -7,7 +7,7 @@ gem 'curb'
 gem 'jbuilder'
 gem 'json'
 gem 'sass'
-gem 'xml-simple'
+gem 'xml-simple', :require => 'xmlsimple'
 gem 'sprockets'
 gem 'sprockets-sass'
 gem 'sprockets-helpers'
@@ -25,6 +25,12 @@ group :development, :offline do
   gem 'pry-nav'
   gem 'guard'
   gem 'guard-sprockets2'
+  gem 'guard-rspec'
   gem 'rb-inotify', '~> 0.9', :require => false
   gem 'therubyracer'
+end
+
+group :test do
+  gem 'rack-test', :require => 'rack/test'
+  gem 'rspec'
 end
