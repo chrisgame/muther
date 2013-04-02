@@ -2,6 +2,7 @@ require 'bundler'
 Bundler.require
 
 require 'pp'
+require 'json'
 require './app'
 
 map Muther.assets_prefix do
