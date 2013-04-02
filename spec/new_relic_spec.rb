@@ -21,6 +21,6 @@ describe 'the new relic api wrapper' do
   it 'should return information for an individual site' do
     get '/new-relic.json?site=help&startdate=2013-01-31&enddate=2013-02-01T00:00'
     last_response.should be_ok
-    last_response.body.should eq '{"help":{"apdex":"1.0","caution_value":"0.85","critical_value":"0.7"}}'
+    last_response.body.should eq '{"site":{"apdex":"1.0","caution_value":"0.85","critical_value":"0.7"}}'
   end
 end

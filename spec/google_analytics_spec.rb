@@ -21,6 +21,6 @@ describe 'the google analytics api wrapper' do
   it 'should return information for an individual site' do
     get '/google-analytics.json?site=help&startdate=2013-01-31T00:00:00&enddate=2013-02-01T23:59:59'
     last_response.should be_ok
-    last_response.body.should eq '{"help":{"unique_visitors":"129763","average_page_load_time":"5.572747933884298"}}'
+    last_response.body.should eq '{"site":{"unique_visitors":"129763","average_page_load_time":"5.572747933884298"}}'
   end
 end

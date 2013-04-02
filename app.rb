@@ -83,7 +83,7 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch :new_relic, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :new_relic, params[:site].to_sym, start_date, end_date, json
       end
     else
       Jbuilder.encode do |json|
@@ -101,7 +101,7 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch :google_analytics, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :google_analytics, params[:site].to_sym, start_date, end_date, json
       end
     else
       Jbuilder.encode do |json|
@@ -120,9 +120,9 @@ class Muther < Sinatra::Base
           return nil if CONFIG[params[:site].to_sym][:team_city][:project_id].nil?
           puts "Fetching from teamcity for "+CONFIG[params[:site].to_sym][:team_city][:project_id]
           team_city = TeamCity.new CONFIG[params[:site].to_sym][:team_city]
-          eval("json.#{params[:site]} team_city.to_builder")
+          eval("json.site team_city.to_builder")
         rescue
-          eval("json.#{params[:site]}")
+          eval("error")
         end
       end
     else
@@ -148,7 +148,7 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch :heroku, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :heroku, params[:site].to_sym, start_date, end_date, json
       end
     else
       Jbuilder.encode do |json|
@@ -173,6 +173,18 @@ class Muther < Sinatra::Base
         eval("json.#{site.to_s} source_class.to_builder")
       rescue
         eval("json.#{site.to_s}")
+      end
+    end
+
+    def fetch_for_site source, site, start_date, end_date, json
+      source_class_name = get_class_name(source.to_s)
+      begin
+        puts "Fetching from "+source.to_s+" for "+site.to_s
+        return nil if CONFIG[site][source].nil?
+        source_class = eval("#{source_class_name}.new start_date, end_date, CONFIG[site][source]")
+        eval("json.site source_class.to_builder")
+      rescue
+        eval("error")
       end
     end
 

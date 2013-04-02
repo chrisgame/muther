@@ -21,6 +21,6 @@ describe 'the team city api wrapper' do
   it 'should return information for an individual site' do
     get '/team-city.json?site=help&startdate=2013-01-31T00:00:00&enddate=2013-02-01T23:59:59'
     last_response.should be_ok
-    last_response.body.should eq '{"help":{"build_status":"success"}}'
+    last_response.body.should eq '{"site":{"build_status":"success"}}'
   end
 end
