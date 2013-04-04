@@ -3,39 +3,48 @@ var defaultRadius = 100
 var noGoogleAnalyticsRadius = 9
 var svg
 
-function fetchFromGoogleAnalytics(fetchUrl, dataset, i){
-  var defObj = $.Deferred();
+function fetchFromGoogleAnalytics(pos){
+  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
   $.getJSON(fetchUrl, function(data){
     try{
-      console.log(data.site.unique_visitors); 
-      dataset[i].uniqueVisitors = data.site.unique_visitors;
+      console.log('R '+dataset[pos].name+' returned '+data.site.unique_visitors); 
+      dataset[pos].uniqueVisitors = data.site.unique_visitors;
     }catch(error){
-      dataset[i].uniqueVisitors = noGoogleAnalyticsRadius;        
+      dataset[pos].uniqueVisitors = noGoogleAnalyticsRadius;        
     }
-    defObj.resolve();  
+    updateBubbles(pos);
   });
-  return defObj.promise();
 };
 
+function updateBubbles(pos){
+  svg.selectAll('circle')
+     .data(dataset)
+     .transition()
+     .duration('1000')
+     .each('start', function(d, i){
+       if(i == 0){
+         console.log('A');
+       }
+     })
+     .attr('r', function(d, i){
+       return d.uniqueVisitors / 500
+     })
+     .attr('cx', function(d, i){
+       return (i * 200) + (d.uniqueVisitors / 500)
+     }) 
+     .attr('cy', 200)
+     .each('end', function(d, i){
+      if(i == dataset.length-1){
+        console.log('F');
+        if(pos < dataset.length-1){
+          fetchFromGoogleAnalytics(pos+1);
+        }
+      }
+     });  
+}
+
 function updateDataFromGoogleAnalytics(){
-  $.each(dataset, function(i, value){
-    var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+value.name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
-    $.when(
-      fetchFromGoogleAnalytics(fetchUrl, dataset, i)
-    ).done(function(){
-      svg.selectAll('circle')
-         .data(dataset)
-         .transition()
-         .duration('1000')
-         .attr('r', function(d, i){
-           return d.uniqueVisitors / 500
-         })
-         .attr('cx', function(d, i){
-           return (i * 200) + (d.uniqueVisitors / 500)
-         }) 
-         .attr('cy', 200)
-      });
-  });
+  fetchFromGoogleAnalytics(0)
 }
 
 $(function(){
