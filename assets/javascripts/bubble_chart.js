@@ -1,22 +1,57 @@
 var dataset=[]
-var defaultRadius = 100
-var noGoogleAnalyticsRadius = 9
+var startRadius = 100
+var minRadius = 9
+var maxRadius = 300
+var defaultApdex = 0
+var defaultPageLoadTime = 0
 var svg
 
-function fetchFromGoogleAnalytics(pos){
+var w = 2048;
+var h = 1024;
+var xScale;
+var yScale;
+
+function fetchUniqueVisitorsFromGoogleAnalytics(pos, fetchNext){
   var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
   $.getJSON(fetchUrl, function(data){
     try{
       console.log('R '+dataset[pos].name+' returned '+data.site.unique_visitors); 
-      dataset[pos].uniqueVisitors = data.site.unique_visitors;
+      dataset[pos].uniqueVisitors = parseInt(data.site.unique_visitors);
     }catch(error){
-      dataset[pos].uniqueVisitors = noGoogleAnalyticsRadius;        
+      dataset[pos].uniqueVisitors = minRadius;        
     }
-    updateBubbles(pos);
+    updateBubbles(pos, fetchNext);
   });
 };
 
-function updateBubbles(pos){
+function fetchPageLoadTimeFromGoogleAnalytics(pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
+  $.getJSON(fetchUrl, function(data){
+    try{
+      console.log('R '+dataset[pos].name+' returned '+data.site.average_page_load_time); 
+      dataset[pos].pageLoadTime = parseFloat(data.site.average_page_load_time);
+    }catch(error){
+      dataset[pos].pageLoadTime = defaultPageLoadTime;        
+    }
+    updateBubbles(pos, fetchNext);
+  });
+};
+
+function fetchApdexFromNewRelic(pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/new-relic.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
+  $.getJSON(fetchUrl, function(data){
+    try{
+      console.log('R '+dataset[pos].name+' returned '+data.site.apdex); 
+      dataset[pos].apdex = parseFloat(data.site.apdex);
+    }catch(error){
+      dataset[pos].apdex = defaultApdex;        
+    }
+    updateBubbles(pos, fetchNext);
+  });
+};
+
+function updateBubbles(pos, fetchNext){
+  updateScales();
   svg.selectAll('circle')
      .data(dataset)
      .transition()
@@ -27,44 +62,73 @@ function updateBubbles(pos){
        }
      })
      .attr('r', function(d, i){
-       return d.uniqueVisitors / 500
+       return rScale(d.uniqueVisitors);
      })
      .attr('cx', function(d, i){
-       return (i * 200) + (d.uniqueVisitors / 500)
+       return xScale(d.pageLoadTime);
      }) 
-     .attr('cy', 200)
+     .attr('cy', function(d, i){
+       return yScale(d.apdex);
+     })
      .each('end', function(d, i){
       if(i == dataset.length-1){
         console.log('F');
         if(pos < dataset.length-1){
-          fetchFromGoogleAnalytics(pos+1);
+          fetchNext(pos+1, fetchNext);
         }
       }
      });  
 }
 
-function updateDataFromGoogleAnalytics(){
-  fetchFromGoogleAnalytics(0)
+function updateScales(){
+  xScale = d3.scale.linear()
+                   .domain([0, d3.max(dataset, function(d) {return d.pageLoadTime;})])
+                   .range([0, w])
+                   .clamp(true);
+
+  yScale = d3.scale.linear()
+                   .domain([0, d3.max(dataset, function(d) {return d.apdex;})])
+                   .range([0, h])
+                   .clamp(true);
+
+  rScale = d3.scale.linear()
+                   .domain([0,
+                            d3.max(dataset, function(d) {return d.uniqueVisitors;})])
+                   .range([minRadius, maxRadius])
+                   .clamp(true);
+}
+
+function updateUniqueVisitorsFromGoogleAnalytics(){
+  fetchUniqueVisitorsFromGoogleAnalytics(0, fetchUniqueVisitorsFromGoogleAnalytics);
+}
+
+function updatePageLoadTimeFromGoogleAnalytics(){
+  fetchPageLoadTimeFromGoogleAnalytics(0, fetchPageLoadTimeFromGoogleAnalytics);
+}
+
+function updateApdexFromNewRelic(){
+  fetchApdexFromNewRelic(0, fetchApdexFromNewRelic)
 }
 
 $(function(){
   $.each(sites, function(key, value){
-    dataset.push({'name' : value, 'uniqueVisitors' : defaultRadius, 'pageLoadSpeed' : '', 'apdex' : ''})
+    dataset.push({'name' : value, 'uniqueVisitors' : startRadius, 'pageLoadTime' : defaultPageLoadTime, 'apdex' : defaultApdex})
   });
+
 
   svg = d3.select('body')
           .append('svg')
-          .attr('width', '2048')
-          .attr('height', '1024');
+          .attr('width', w)
+          .attr('height', h);
 
   var circles = svg.selectAll('circle')
                     .data(dataset)
                     .enter() 
                     .append('circle');
 
-  circles.attr('r', defaultRadius)
+  circles.attr('r', startRadius)
          .attr('cx', function(d, i){
-           return (i * 200)+defaultRadius
+           return (i * 200)+startRadius
          }) 
          .attr('cy', 200)
          .attr('fill', 'grey')
