@@ -10,6 +10,10 @@ var w = 2048;
 var h = 1024;
 var xScale;
 var yScale;
+var xAxis;
+var yAxis;
+var g;
+var padding = 20;
 
 function fetchUniqueVisitorsFromGoogleAnalytics(pos, fetchNext){
   var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
@@ -52,6 +56,7 @@ function fetchApdexFromNewRelic(pos, fetchNext){
 
 function updateBubbles(pos, fetchNext){
   updateScales();
+  updateAxis();
   svg.selectAll('circle')
      .data(dataset)
      .transition()
@@ -77,7 +82,7 @@ function updateBubbles(pos, fetchNext){
           fetchNext(pos+1, fetchNext);
         }
       }
-     });  
+     });
 }
 
 function updateScales(){
@@ -96,6 +101,15 @@ function updateScales(){
                             d3.max(dataset, function(d) {return d.uniqueVisitors;})])
                    .range([minRadius, maxRadius])
                    .clamp(true);
+}
+
+function updateAxis(){
+  xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient('bottom')
+
+  g.call(xAxis)
+   .attr("transform", "translate(0," + (h - padding) + ")");
 }
 
 function updateUniqueVisitorsFromGoogleAnalytics(){
@@ -149,7 +163,9 @@ $(function(){
                 .attr('text-anchor', 'middle')
                 .attr('fill', 'white');
 
-  
+  g = svg.append('g');
+
+  updateAxis(); 
 });
   
 
