@@ -12,8 +12,9 @@ var xScale;
 var yScale;
 var xAxis;
 var yAxis;
-var g;
-var padding = 20;
+var xAxisGroup;
+var yAxisGroup;
+var padding = 35;
 
 function fetchUniqueVisitorsFromGoogleAnalytics(pos, fetchNext){
   var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
@@ -88,12 +89,12 @@ function updateBubbles(pos, fetchNext){
 function updateScales(){
   xScale = d3.scale.linear()
                    .domain([0, d3.max(dataset, function(d) {return d.pageLoadTime;})])
-                   .range([0, w])
+                   .range([padding, w - padding])
                    .clamp(true);
 
   yScale = d3.scale.linear()
                    .domain([0, d3.max(dataset, function(d) {return d.apdex;})])
-                   .range([0, h])
+                   .range([padding, h - padding])
                    .clamp(true);
 
   rScale = d3.scale.linear()
@@ -107,9 +108,18 @@ function updateAxis(){
   xAxis = d3.svg.axis()
                 .scale(xScale)
                 .orient('bottom')
+                .ticks(5)
 
-  g.call(xAxis)
-   .attr("transform", "translate(0," + (h - padding) + ")");
+  xAxisGroup.call(xAxis)
+            .attr("transform", "translate(0," + (h - padding) + ")");
+
+  yAxis = d3.svg.axis()
+                .scale(yScale)
+                .orient('left')
+                .ticks(5)
+
+  yAxisGroup.call(yAxis)
+            .attr("transform", "translate(" + padding + ",0)");
 }
 
 function updateUniqueVisitorsFromGoogleAnalytics(){
@@ -163,7 +173,8 @@ $(function(){
                 .attr('text-anchor', 'middle')
                 .attr('fill', 'white');
 
-  g = svg.append('g');
+  xAxisGroup = svg.append('g');
+  yAxisGroup = svg.append('g');
 
   updateAxis(); 
 });
