@@ -72,6 +72,7 @@ function fetchBuildStatusFromTeamCity(pos, fetchNext){
 function updateBubbles(pos, fetchNext){
   updateScales();
   updateAxis();
+  updateLabels();
   svg.selectAll('circle')
      .data(dataset)
      .transition()
@@ -137,6 +138,23 @@ function updateAxis(){
 
   yAxisGroup.call(yAxis)
             .attr("transform", "translate(" + padding + ",0)");
+}
+
+function updateLabels(){
+
+  svg.selectAll('text')
+     .data(dataset)
+     .text(function(d, i){
+       return d.name
+     })
+     .attr('x', function(d, i){
+       return xScale(d.pageLoadTime);
+     }) 
+     .attr('y', function(d, i){
+       return yScale(d.apdex) - (i*10);
+     })
+     .attr('text-anchor', 'middle')
+     .attr('fill', 'black');
 }
 
 function updateUniqueVisitorsFromGoogleAnalytics(){
