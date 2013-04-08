@@ -4,6 +4,7 @@ var minRadius = 9
 var maxRadius = 300
 var defaultApdex = 0
 var defaultPageLoadTime = 0
+var defaultBuildStatus = 'unknown'
 var svg
 
 var w = 2048;
@@ -55,6 +56,19 @@ function fetchApdexFromNewRelic(pos, fetchNext){
   });
 };
 
+function fetchBuildStatusFromTeamCity(pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/team-city.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
+  $.getJSON(fetchUrl, function(data){
+    try{
+      console.log('R '+dataset[pos].name+' returned '+data.site.build_status); 
+      dataset[pos].buildStatus = data.site.build_status;
+    }catch(error){
+      dataset[pos].buildStatus = defaultBuildStatus;        
+    }
+    updateBubbles(pos, fetchNext);
+  });
+};
+
 function updateBubbles(pos, fetchNext){
   updateScales();
   updateAxis();
@@ -66,6 +80,9 @@ function updateBubbles(pos, fetchNext){
        if(i == 0){
          console.log('A');
        }
+     })
+     .attr('class', function(d, i){
+       return 'build-status-'+d.buildStatus
      })
      .attr('r', function(d, i){
        return rScale(d.uniqueVisitors);
@@ -134,6 +151,10 @@ function updateApdexFromNewRelic(){
   fetchApdexFromNewRelic(0, fetchApdexFromNewRelic)
 }
 
+function updateBuildStatusFromTeamCity(){
+  fetchBuildStatusFromTeamCity(0, fetchBuildStatusFromTeamCity)
+}
+
 $(function(){
   $.each(sites, function(key, value){
     dataset.push({'name' : value, 'uniqueVisitors' : startRadius, 'pageLoadTime' : defaultPageLoadTime, 'apdex' : defaultApdex})
@@ -142,6 +163,7 @@ $(function(){
 
   svg = d3.select('body')
           .append('svg')
+          .attr('id', 'monitor')
           .attr('width', w)
           .attr('height', h);
 

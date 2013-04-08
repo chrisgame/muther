@@ -1,0 +1,12 @@
+#monitor{
+  .build-status-success{
+    fill: red;
+  }
+  .build-status-failure{
+    fill: green;
+  }
+  .build-status-error{
+    fill: grey;
+  }
+}
+

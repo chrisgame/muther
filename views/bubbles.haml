@@ -2,10 +2,11 @@
 %html
   %head
 
-    %script{:rel => 'stylesheet', :src => javascript_path('jquery-1.9.1.min')}
-    %script{:rel => 'stylesheet', :src => javascript_path('jquery.counter')}
-    %script{:rel => 'stylesheet', :src => javascript_path('bubble_chart')}
-    %script{:rel => 'stylesheet', :src => javascript_path('d3.v3.js')}
+    %script{:src => javascript_path('jquery-1.9.1.min')}
+    %script{:src => javascript_path('jquery.counter')}
+    %script{:src => javascript_path('bubble_chart')}
+    %script{:src => javascript_path('d3.v3.js')}
+    %link{:rel => 'stylesheet', :href => stylesheet_path('bubbles')}
     %title='Muther'
     :javascript
       var app_mode = "#{ENV['RACK_ENV']}"
