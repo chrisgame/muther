@@ -8,5 +8,15 @@
   .build-status-error{
     fill: grey;
   }
+  .axis{ 
+    path, line {
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdge;
+    }
+    text {
+      font-size: 18px;
+    }
+  }
 }
 
