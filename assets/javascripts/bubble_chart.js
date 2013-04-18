@@ -17,48 +17,48 @@ var xAxisGroup;
 var yAxisGroup;
 var padding = 35;
 
-function fetchUniqueVisitorsFromGoogleAnalytics(pos, fetchNext){
-  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
-  $.getJSON(fetchUrl, function(data){
+function fetchUniqueVisitorsFromGoogleAnalytics(startDate, endDate, pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
+  return $.getJSON(fetchUrl, function(data){
     try{
       console.log('R '+dataset[pos].name+' returned '+data.site.unique_visitors); 
       dataset[pos].uniqueVisitors = parseInt(data.site.unique_visitors);
     }catch(error){
       dataset[pos].uniqueVisitors = minRadius;        
     }
-    updateBubbles(pos, fetchNext);
+    updateBubbles(startDate, endDate, pos, fetchNext);
   });
 };
 
-function fetchPageLoadTimeFromGoogleAnalytics(pos, fetchNext){
-  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
-  $.getJSON(fetchUrl, function(data){
+function fetchPageLoadTimeFromGoogleAnalytics(startDate, endDate, pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
+  return $.getJSON(fetchUrl, function(data){
     try{
       console.log('R '+dataset[pos].name+' returned '+data.site.average_page_load_time); 
       dataset[pos].pageLoadTime = parseFloat(data.site.average_page_load_time);
     }catch(error){
       dataset[pos].pageLoadTime = defaultPageLoadTime;        
     }
-    updateBubbles(pos, fetchNext);
+    updateBubbles(startDate, endDate, pos, fetchNext);
   });
 };
 
-function fetchApdexFromNewRelic(pos, fetchNext){
-  var fetchUrl = 'http://localhost:3000/new-relic.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
-  $.getJSON(fetchUrl, function(data){
+function fetchApdexFromNewRelic(startDate, endDate, pos, fetchNext){
+  var fetchUrl = 'http://localhost:3000/new-relic.json?site='+dataset[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
+  return $.getJSON(fetchUrl, function(data){
     try{
       console.log('R '+dataset[pos].name+' returned '+data.site.apdex); 
       dataset[pos].apdex = parseFloat(data.site.apdex);
     }catch(error){
       dataset[pos].apdex = defaultApdex;        
     }
-    updateBubbles(pos, fetchNext);
+    updateBubbles(startDate, endDate, pos, fetchNext);
   });
 };
 
 function fetchBuildStatusFromTeamCity(pos, fetchNext){
   var fetchUrl = 'http://localhost:3000/team-city.json?site='+dataset[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
-  $.getJSON(fetchUrl, function(data){
+  return $.getJSON(fetchUrl, function(data){
     try{
       console.log('R '+dataset[pos].name+' returned '+data.site.build_status); 
       dataset[pos].buildStatus = data.site.build_status;
@@ -145,7 +145,7 @@ function updateLabels(){
   svg.selectAll('text')
      .data(dataset)
      .text(function(d, i){
-       return d.name
+       return formating.prettyText(d.name)
      })
      .attr('x', function(d, i){
        return xScale(d.pageLoadTime);
@@ -157,20 +157,21 @@ function updateLabels(){
      .attr('fill', 'black');
 }
 
-function updateUniqueVisitorsFromGoogleAnalytics(){
-  fetchUniqueVisitorsFromGoogleAnalytics(0, fetchUniqueVisitorsFromGoogleAnalytics);
+function updateUniqueVisitorsFromGoogleAnalytics(startDate, endDate){
+  return fetchUniqueVisitorsFromGoogleAnalytics(startDate, endDate, 0, fetchUniqueVisitorsFromGoogleAnalytics);
 }
 
-function updatePageLoadTimeFromGoogleAnalytics(){
-  fetchPageLoadTimeFromGoogleAnalytics(0, fetchPageLoadTimeFromGoogleAnalytics);
+
+function updatePageLoadTimeFromGoogleAnalytics(startDate, endDate){
+  return fetchPageLoadTimeFromGoogleAnalytics(startDate, endDate, 0, fetchPageLoadTimeFromGoogleAnalytics);
 }
 
-function updateApdexFromNewRelic(){
-  fetchApdexFromNewRelic(0, fetchApdexFromNewRelic)
+function updateApdexFromNewRelic(startDate, endDate){
+  return fetchApdexFromNewRelic(startDate, endDate, 0, fetchApdexFromNewRelic)
 }
 
 function updateBuildStatusFromTeamCity(){
-  fetchBuildStatusFromTeamCity(0, fetchBuildStatusFromTeamCity)
+  return fetchBuildStatusFromTeamCity(0, fetchBuildStatusFromTeamCity)
 }
 
 $(function(){
@@ -213,10 +214,31 @@ $(function(){
                 .attr('text-anchor', 'middle')
                 .attr('fill', 'white');
 
-  xAxisGroup = svg.append('g');
-  yAxisGroup = svg.append('g');
+  xAxisGroup = svg.append('g')
+                  .attr('class', 'axis');
+  yAxisGroup = svg.append('g')
+                  .attr('class', 'axis');
 
-  updateAxis(); 
+  var defObj = $.Deferred();
+  defObj.then(function(){
+    updatePageLoadTimeFromGoogleAnalytics(timePoints.startOfYesterday(), timePoints.endOfYesterday()).then(
+      function(){
+        updateUniqueVisitorsFromGoogleAnalytics(timePoints.startOfYesterday(), timePoints.endOfYesterday()).then(
+          function(){
+            updateApdexFromNewRelic(timePoints.oneHourAgo(), timePoints.currentDateTime()).then(
+              function(){
+                updateBuildStatusFromTeamCity()
+              })
+          })
+      })
+  })
+
+
+  window.setInterval(function(){updateUniqueVisitorsFromGoogleAnalytics()}, 86400000);
+  window.setInterval(function(){updatePageLoadTimeFromGoogleAnalytics()}, 86400000);
+  window.setInterval(function(){updateApdexFromNewRelic()}, 60000);
+  window.setInterval(function(){updateBuildStatusFromTeamCity()}, 30000);
+
 });
   
 
