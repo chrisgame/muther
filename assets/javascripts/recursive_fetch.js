@@ -65,5 +65,40 @@ var recursiveFetch = {
 
   updateBuildStatusFromTeamCity: function(dataset){
     return recursiveFetch.fetchBuildStatusFromTeamCity(dataset, 0, recursiveFetch.fetchBuildStatusFromTeamCity)
+  },
+
+  updateBubbles: function(dataset, startDate, endDate, pos, fetchNext){
+    updateScales();
+    updateAxis();
+    updateLabels();
+    svg.selectAll('circle')
+       .data(dataset)
+       .transition()
+       .duration('1000')
+       .each('start', function(d, i){
+         if(i == 0){
+           console.log('A');
+         }
+       })
+       .attr('class', function(d, i){
+         return 'build-status-'+d.buildStatus
+       })
+       .attr('r', function(d, i){
+         return rScale(d.uniqueVisitors);
+       })
+       .attr('cx', function(d, i){
+         return xScale(d.pageLoadTime);
+       }) 
+       .attr('cy', function(d, i){
+         return yScale(d.apdex);
+       })
+       .each('end', function(d, i){
+        if(i == dataset.length-1){
+          console.log('F');
+          if(pos < dataset.length-1){
+            fetchNext(dataset, startDate, endDate, pos+1, fetchNext);
+          }
+        }
+       });
   }
 };
