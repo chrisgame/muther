@@ -16,8 +16,8 @@ var timePoints = {
 
   oneHourAgo: function(){
     oneHourAgo = timePoints.currentDateTime();
-    oneHourAgo.setHours(timePoints.currentDateTime.getHours()-1);
-    console.log('One hour ago '+one_hour_ago)
+    oneHourAgo.setHours(timePoints.currentDateTime().getHours()-1);
+    console.log('One hour ago '+oneHourAgo)
     return oneHourAgo
   },
 
