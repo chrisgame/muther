@@ -1,22 +1,25 @@
-#monitor{
-  .build-status-success{
-    fill: red;
-  }
-  .build-status-failure{
-    fill: green;
-  }
-  .build-status-error{
-    fill: grey;
-  }
-  .axis{ 
-    path, line {
-      fill: none;
-      stroke: black;
-      shape-rendering: crispEdge;
-    }
-    text {
-      font-size: 18px;
-    }
-  }
+body{
+  margin: 0;
+	#monitor{
+	  .build-status-success{
+	    fill: red;
+	  }
+	  .build-status-failure{
+	    fill: green;
+	  }
+	  .build-status-error{
+	    fill: grey;
+	  }
+	  .axis{ 
+	    path, line {
+	      fill: none;
+	      stroke: black;
+	      shape-rendering: crispEdge;
+	    }
+	    text {
+	      font-size: 18px;
+	    }
+	  }
+	}
 }
 

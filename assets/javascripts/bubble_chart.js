@@ -8,8 +8,8 @@ var defaultBuildStatus = 'unknown'
 var svg
 
 var padding = 35;
-var w = window.innerWidth - padding;
-var h = window.innerHeight - padding;
+var w = window.innerWidth;
+var h = window.innerHeight - 5;
 var xScale;
 var yScale;
 var xAxis;
