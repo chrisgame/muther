@@ -7,15 +7,15 @@ var defaultPageLoadTime = 0
 var defaultBuildStatus = 'unknown'
 var svg
 
-var w = 2048;
-var h = 1024;
+var padding = 35;
+var w = window.innerWidth - padding;
+var h = window.innerHeight - padding;
 var xScale;
 var yScale;
 var xAxis;
 var yAxis;
 var xAxisGroup;
 var yAxisGroup;
-var padding = 35;
 
 function updateScales(){
   xScale = d3.scale.linear()
