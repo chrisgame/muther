@@ -56,40 +56,31 @@ var bubbles = {
   },
   updateLabels: function(){
 
-    svg.selectAll('text')
-       .data(dataset.nodes)
-       .attr('x', function(d, i){
-         return xScale(d.pageLoadTime);
-       }) 
-       .attr('y', function(d, i){
-         return yScale(d.apdex);
-       })
-       .attr('text-anchor', 'middle')
-       .attr('fill', 'black');
+    text.text(function(d, i){
+	  return formating.prettyText(d.name)
+	})
+	.attr('x', function(d, i){
+	  return xScale(d.pageLoadTime);
+	}) 
+	.attr('y', function(d, i){
+	  return yScale(d.apdex);
+	})
+	.attr('fill', 'black');
   },
   updateForce: function(){
 
-    force = d3.layout.force()
-		  	 .nodes(dataset.nodes)
-	               	 .charge(function(d){
-		         	0 - (rScale(d.uniqueVisitors) * 1.5)
-	               	  })
-                         .gravity([0.03])
-	                 .size([w, h])
-	                 .start();
+    force.nodes(dataset.nodes)
+	 .charge(function(d){
+	   0 - (rScale(d.uniqueVisitors) * 1.5)
+	 })
+         .gravity([0])
   },
   update: function(){
-
-    force.on('tick', function(){
-	  nodes.attr('cx', function(d){return d.x;})
-               .attr('cy', function(d){return d.y;})
-          bubbles.updateScales();
-          bubbles.updateLabels();
-    });
-
+  
+    force.stop 
     bubbles.updateScales();
     bubbles.updateAxis();
-    bubbles.updateForce();
+
     svg.selectAll('circle')
        .data(dataset.nodes)
        .transition()
@@ -97,26 +88,33 @@ var bubbles = {
        .each('start', function(d, i){
          if(i == 0){
            console.log('A');
-         }
+	 }
        })
        .attr('class', function(d, i){
          return 'build-status-'+d.buildStatus
        })
        .attr('r', function(d, i){
-         return rScale(d.uniqueVisitors);
+	 return rScale(d.uniqueVisitors);
        })
        .attr('cx', function(d, i){
-         return xScale(d.pageLoadTime);
+	 return xScale(d.pageLoadTime);
        }) 
        .attr('cy', function(d, i){
-         return yScale(d.apdex);
+	 return yScale(d.apdex);
        })
        .each('end', function(d, i){
-        if(i == dataset.nodes.length-1){
-          console.log('F');
-        }
-       })
-    bubbles.updateLabels();
+         bubbles.updateLabels();
+         if(i == dataset.length-1){
+	   console.log('F');
+	   if(pos < dataset.length-1){
+	     console.log('F All Anim')
+             updateForce();
+             force.start();
+           }
+         }
+       });
+
+
   },
   initialize: function(){
 
@@ -198,10 +196,13 @@ $(function(){
 
   bubbles.initialize();
 
-//  deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())
-//  deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())
-//  deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())
-//  deferedFetch.updateBuildStatusFromTeamCity(dataset);
+  window.setTimeout(function(){
+	  
+	  deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())
+	  deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())
+	  deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())
+	  deferedFetch.updateBuildStatusFromTeamCity(dataset);
+  }, 3000);
 
   window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
   window.setInterval(function(){deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);

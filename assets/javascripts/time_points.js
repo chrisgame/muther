@@ -2,14 +2,17 @@ var timePoints = {
   currentDateTime: function(){
     if (app_mode == 'offline'){
       date = new Date;
+      date.setDate('01');
       date.setYear('2013');
       date.setMonth('01');
-      date.setDate('01');
       date.setHours('00');
       date.setMinutes('00');
       date.setSeconds('00')
+
+      console.log('Current Date '+date)
       return date
     }else{
+      console.log('Current Date '+date)
       return new Date;
     };
   },
