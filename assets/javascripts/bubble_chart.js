@@ -56,30 +56,90 @@ var bubbles = {
   },
   updateLabels: function(){
 
-    text.text(function(d, i){
+    text.transition()
+        .duration('1000')
+        .text(function(d, i){
 	  return formating.prettyText(d.name)
 	})
 	.attr('x', function(d, i){
-	  return xScale(d.pageLoadTime);
+	  return d.x;
 	}) 
 	.attr('y', function(d, i){
-	  return yScale(d.apdex);
+	  return d.y;
 	})
 	.attr('fill', 'black');
   },
   updateForce: function(){
 
     force.nodes(dataset.nodes)
+	 .each()
 	 .charge(function(d){
 	   0 - (rScale(d.uniqueVisitors) * 1.5)
 	 })
-         .gravity([0])
+         .gravity([0.0000000000000015])
+
+  },
+  collide: function(node){
+    var r = node.r,
+        nx1 = node.x - r,
+        nx2 = node.x + r,
+        ny1 = node.y - r,
+        ny2 = node.y + r;
+
+    return function(quad, x1, y1, x2, y2){
+      if (quad.point && (quad.point !== node) && quad.point && node){
+        var x = node.x - quad.point.x,
+	    y = node.y - quad.point.y,
+	    distance = Math.sqrt(x * x + y * y),
+	    minDistance = node.r + quad.point.r;
+	    if (node.name == 'help'){
+	      console.log('node name '+node.name+' quad name '+quad.point.name+' distance '+distance+' minDistance '+minDistance)
+	    }
+	if (distance < minDistance) {
+          var newNodeX = (node.r + quad.point.r + quad.point.x)/2,
+	      newNodeY = (node.r + quad.point.r + quad.point.x)/2;
+	  if (node.name == 'help'){
+	    console.log('Moving '+node.name+' x '+(node.x - newNodeX)+' y '+(node.y - newNodeY));
+	  }
+	  node.x = newNodeX; 
+	  node.y = newNodeY; 
+
+	  var newQuadPointX = (quad.point.r + node.r + node.x)/2,
+	      newQuadPointY = (quad.point.r + node.r + node.y)/2;
+	  if (node.name == 'help'){
+	    console.log('Moving '+quad.point.name+' x '+(newQuadPointX - quad.point.x)+' y '+(newQuadPointY - quad.point.y));
+          }	  
+	  quad.point.x = newQuadPointX;
+	  quad.point.y = newQuadPointY;
+	}	
+      }
+      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+    };    
+  },
+  updateCollisions: function(){
+    var q = d3.geom.quadtree(dataset.nodes),
+        i = 0,
+        n = dataset.nodes.length;
+
+    while (++i < n) q.visit(bubbles.collide(dataset.nodes[i]));
+  },
+  updateNode: function(node){
+    node.r = rScale(node.uniqueVisitors);
+    node.x = xScale(node.pageLoadTime);
+    node.y = yScale(node.apdex);
+  },
+  updateDataset: function(){
+    var i = 0,
+        n = dataset.nodes.length;
+
+    while (++i < n ) bubbles.updateNode(dataset.nodes[i]);
   },
   update: function(){
   
     force.stop 
     bubbles.updateScales();
     bubbles.updateAxis();
+    bubbles.updateDataset();
 
     svg.selectAll('circle')
        .data(dataset.nodes)
@@ -90,26 +150,28 @@ var bubbles = {
            console.log('A');
 	 }
        })
+       .attr('data-name', function(d, i){
+         return d.name
+       })
        .attr('class', function(d, i){
          return 'build-status-'+d.buildStatus
        })
        .attr('r', function(d, i){
-	 return rScale(d.uniqueVisitors);
+         return d.r
        })
        .attr('cx', function(d, i){
-	 return xScale(d.pageLoadTime);
+	 return d.x
        }) 
        .attr('cy', function(d, i){
-	 return yScale(d.apdex);
+	 return d.y
        })
        .each('end', function(d, i){
          bubbles.updateLabels();
+
          if(i == dataset.length-1){
 	   console.log('F');
 	   if(pos < dataset.length-1){
 	     console.log('F All Anim')
-             updateForce();
-             force.start();
            }
          }
        });
