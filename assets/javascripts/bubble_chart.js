@@ -79,54 +79,47 @@ var bubbles = {
          .gravity([0.0000000000000015])
 
   },
-  collide: function(node){
+  overlap: function(node, otherNode){
+    if (node.name == otherNode.name){return};
+    debugger;
     var r = node.r,
-        nx1 = node.x - r,
-        nx2 = node.x + r,
-        ny1 = node.y - r,
-        ny2 = node.y + r;
+	lowerXLimit = node.x - r,
+	upperXLimit = node.x + r,
+	lowerYLimit = node.y - y,
+	upperYLimit = node.y + y;
 
-    return function(quad, x1, y1, x2, y2){
-      if (quad.point && (quad.point !== node) && quad.point && node){
-        var x = node.x - quad.point.x,
-	    y = node.y - quad.point.y,
-	    distance = Math.sqrt(x * x + y * y),
-	    minDistance = node.r + quad.point.r;
-	    if (node.name == 'help'){
-	      console.log('node name '+node.name+' quad name '+quad.point.name+' distance '+distance+' minDistance '+minDistance)
-	    }
-	if (distance < minDistance) {
-          var newNodeX = (node.r + quad.point.r + quad.point.x)/2,
-	      newNodeY = (node.r + quad.point.r + quad.point.x)/2;
-	  if (node.name == 'help'){
-	    console.log('Moving '+node.name+' x '+(node.x - newNodeX)+' y '+(node.y - newNodeY));
-	  }
-	  node.x = newNodeX; 
-	  node.y = newNodeY; 
+    return otherNode.x > 
 
-	  var newQuadPointX = (quad.point.r + node.r + node.x)/2,
-	      newQuadPointY = (quad.point.r + node.r + node.y)/2;
-	  if (node.name == 'help'){
-	    console.log('Moving '+quad.point.name+' x '+(newQuadPointX - quad.point.x)+' y '+(newQuadPointY - quad.point.y));
-          }	  
-	  quad.point.x = newQuadPointX;
-	  quad.point.y = newQuadPointY;
-	}	
-      }
-      return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-    };    
   },
-  updateCollisions: function(){
-    var q = d3.geom.quadtree(dataset.nodes),
-        i = 0,
-        n = dataset.nodes.length;
+  overlappingNodes: function(node){
+    var i = 0,
+        n = dataset.nodes.length,
+	result = [];
 
-    while (++i < n) q.visit(bubbles.collide(dataset.nodes[i]));
+    while (++i < n ){
+      var otherNode = dataset.nodes[i];
+      if (bubbles.overlap(node, otherNode)){
+        result.push(otherNode);
+      }	
+    }
+  },
+  getFoci: function(node){
+    var i = 0, 
+        overlappingNodes = bubbles.overlappingNodes(node);
+    while (++i < overlappingNodes.length){
+      if (node.r > overlappingNode[i].r){
+        return  true;
+      }
+      else{ 
+        return overlapingNodes.sort(function(a, b){a.r - b.r})[0]  
+      }
+    }
   },
   updateNode: function(node){
     node.r = rScale(node.uniqueVisitors);
     node.x = xScale(node.pageLoadTime);
     node.y = yScale(node.apdex);
+    node.foci = bubbles.getFoci(node);
   },
   updateDataset: function(){
     var i = 0,
