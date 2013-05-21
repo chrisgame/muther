@@ -80,7 +80,8 @@ $(function(){
             fixed: true,
             type: i,
             x: (i+1) * (w / 6),
-            y: h / 2};
+            y: h / 2,
+            name: 'fixed '+i};
   }),
   color = d3.scale.category10();
 
@@ -118,7 +119,19 @@ $(function(){
 	  k = e.alpha * .1,
 	  i = 0,
 	  n = nodes.length,
-	  o;
+	  o,
+	  group = 0;
+
+      while (++i < n) {
+        o = nodes[i];
+	if (o.fixed) continue;
+	c = nodes[o.type];
+	o.x += (c.x - o.x) * k;
+	o.y += (c.y - o.y) * k;
+	q.visit(markCollisions(o, o.name));
+      }
+
+      i = 0;
 
       while (++i < n) {
         o = nodes[i];
@@ -173,6 +186,30 @@ $(function(){
 		  l = (l - r) / l * .5;
 		  node.px += x * l;
 		  node.py += y * l;
+		}
+	      }
+	      return x1 > nx2
+		  || x2 < nx1
+		  || y1 > ny2
+		  || y2 < ny1;
+	    };
+        }
+
+	function markCollisions(node, group) {
+	    var r = node.r,
+		nx1 = node.x - r,
+		nx2 = node.x + r,
+		ny1 = node.y - r,
+		ny2 = node.y + r;
+	    return function(quad, x1, y1, x2, y2) {
+	      if (quad.point && (quad.point !== node)) {
+		var x = node.x - quad.point.x,
+		    y = node.y - quad.point.y,
+		    l = Math.sqrt(x * x + y * y),
+		    r = node.r + quad.point.r;
+		if (l < r) {
+		  node.collisions = group
+		  quad.point.collisions = group
 		}
 	      }
 	      return x1 > nx2
