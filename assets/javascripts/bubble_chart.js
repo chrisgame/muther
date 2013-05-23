@@ -134,6 +134,31 @@ $(function(){
       i = 0;
 
       while (++i < n) {
+	var collisionList = [],
+	    i2 = -1;
+        
+	while (++i2 < n){
+          if (nodes[i2].collisions == nodes[i].name || nodes[i2].name == nodes[i].name) {
+            collisionList.push(nodes[i2])
+	  } 
+        }
+
+	if (collisionList.length > 0){
+	  collisionList.sort(function(a,b){a.radius - b.radius}).reverse()
+	  collisionList[0].fixed = true;
+
+	  var i3 = 0;
+
+	  while (++i3 < collisionList.length){
+            collisionList[i3].type = collisionList[0].index
+            collisionList[i3].fixed = false
+	  }
+	}
+      }
+
+      i = 0;
+
+      while (++i < n) {
         o = nodes[i];
 	if (o.fixed) continue;
 	c = nodes[o.type];
