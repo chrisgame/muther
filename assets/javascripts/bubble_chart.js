@@ -35,9 +35,10 @@ var bubbles = {
                      .clamp(true);
 
     rScale = d3.scale.linear()
-                      .domain([0, d3.max(dataset.nodes, function(d) {return d.uniqueVisitors;})])
-                      .range([minRadius, maxRadius])
-                      .clamp(true);
+                     .domain([0, d3.max(dataset.nodes, function(d) {return d.uniqueVisitors;})])
+                     .range([minRadius, maxRadius])
+                     .clamp(true);
+
   },
   updateAxis: function(){
     xAxis = d3.svg.axis()
@@ -70,31 +71,33 @@ var bubbles = {
 	  return d.y;
 	})
 	.attr('fill', 'black');
+  },
+
+  update: function(){
+      bubbles.updateScales();
+      var i = -1,
+          n = dataset.nodes.length;
+
+
+      while (++i < n) {
+        dataset.nodes[i].r = rScale(dataset.nodes[i].uniqueVisitors);
+        dataset.nodes[i].x = xScale(dataset.nodes[i].pageLoadTime);
+        dataset.nodes[i].y = yScale(dataset.nodes[i].apdex);
+      }
   }
 };
   
 $(function(){
-  var nodes = d3.range(5).map(function(i) {
-    return {type: Math.random() * 5 | 0,
-	    r: 30,
-            fixed: true,
-            type: i,
-            x: (i+1) * (w / 6),
-            y: h / 2,
-            name: 'fixed '+i};
-  }),
-  color = d3.scale.category10();
-
   var i = 0;
 
   while (++i < sites.length){
-    nodes.push({'name': sites[i], 'fixed': false, 'type': 0, 'r': startRadius+i, 'x': startX+i, 'y': startY+i})
+    dataset.nodes.push({'name': sites[i], 'fixed': false, 'type': 0, 'r': startRadius+i, 'x': startX+i, 'y': startY+i})
   } 
 
-  var force = d3.layout.force()
+  force = d3.layout.force()
       .gravity(0)
       .charge(0)
-      .nodes(nodes)
+      .nodes(dataset.nodes)
       .size([w, h]);
   
   force.start();
@@ -104,28 +107,30 @@ $(function(){
       .attr('width', w)
       .attr('height', h)
 
-  svg.append('svg:rect')
-      .attr('width', w)
-      .attr('height', h);
+//  svg.append('svg:rect')
+  //    .attr('width', w)
+  //    .attr('height', h);
 
   svg.selectAll('circle')
-      .data(nodes)
+      .data(dataset.nodes)
       .enter().append('svg:circle')
-      .attr('r', function(d) {return d.r - 2})
-      .style('fill', function(d, i) {return color(d.type);});
+      .style('fill', 'green')
+      .attr('r', function(d) {return d.r - 2});
 
   force.on('tick', function(e){
-      var q = d3.geom.quadtree(nodes),
+      var q = d3.geom.quadtree(dataset.nodes),
 	  k = e.alpha * .1,
 	  i = 0,
-	  n = nodes.length,
+	  n = dataset.nodes.length,
 	  o,
 	  group = 0;
 
+
+
       while (++i < n) {
-        o = nodes[i];
+        o = dataset.nodes[i];
 	if (o.fixed) continue;
-	c = nodes[o.type];
+	c = dataset.nodes[o.type];
 	o.x += (c.x - o.x) * k;
 	o.y += (c.y - o.y) * k;
 	q.visit(markCollisions(o, o.name));
@@ -138,13 +143,13 @@ $(function(){
 	    i2 = -1;
         
 	while (++i2 < n){
-          if (nodes[i2].collisions == nodes[i].name || nodes[i2].name == nodes[i].name) {
-            collisionList.push(nodes[i2])
+          if (dataset.nodes[i2].collisions == dataset.nodes[i].name || dataset.nodes[i2].name == dataset.nodes[i].name) {
+            collisionList.push(dataset.nodes[i2])
 	  } 
         }
 
 	if (collisionList.length > 0){
-	  collisionList.sort(function(a,b){a.radius - b.radius}).reverse()
+	  collisionList.sort(function(a,b){a.r - b.r}).reverse()
 	  collisionList[0].fixed = true;
 
 	  var i3 = 0;
@@ -159,9 +164,9 @@ $(function(){
       i = 0;
 
       while (++i < n) {
-        o = nodes[i];
+        o = dataset.nodes[i];
 	if (o.fixed) continue;
-	c = nodes[o.type];
+	c = dataset.nodes[o.type];
 	o.x += (c.x - o.x) * k;
 	o.y += (c.y - o.y) * k;
 	q.visit(collide(o));
@@ -169,31 +174,9 @@ $(function(){
 
       svg.selectAll('circle')
 	 .attr('cx', function(d) { return d.x; })
-	 .attr('cy', function(d) { return d.y; });
+	 .attr('cy', function(d) { return d.y; })
+	 .attr('r', function(d) { return d.r; });
 
-
-	var p0;
-	svg.on('mousemove', function() {
-	  var p1 = d3.svg.mouse(this),
-	      node = {r:Math.random() * 12 + 4, type: Math.random() * 5 | 0, x: p1[0], y: p1[1], px: (p0 || (p0 = p1))[0], py: p0[1]};
-
-	  p0 = p1;
-
-	  svg.append('svg:circle')
-	      .data([node])
-	      .attr('cx', function(d) { return d.x; })
-	      .attr('cy', function(d) { return d.y; })
-	      .attr('r', function(d) { return d.r - 2; })
-	      .style('fill', function(d) { return color(d.type);})
-	      .transition()
-		.delay(3000)
-		.attr('r', 1e-6)
-		.each('end', function() { nodes.splice(6, 1); })
-		.remove();
-
-	   nodes.push(node);
-	   force.resume();
-	});
 
 	function collide(node) {
 	    var r = node.r,
@@ -243,5 +226,14 @@ $(function(){
 		  || y2 < ny1;
 	    };
         }
+
+      force.start();
+
+	deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
+	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
+	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
+//	deferedFetch.updateBuildStatusFromTeamCity(dataset);
   });
+
+  
 });
