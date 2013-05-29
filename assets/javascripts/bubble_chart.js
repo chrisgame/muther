@@ -59,8 +59,10 @@ var bubbles = {
   },
   updateLabels: function(){
 
-    text.transition()
-        .duration('1000')
+    svg.selectAll('text')
+	.data(dataset.nodes)
+        .enter()
+	.append('text')
         .text(function(d, i){
 	  return formating.prettyText(d.name)
 	})
@@ -70,10 +72,54 @@ var bubbles = {
 	.attr('y', function(d, i){
 	  return d.y;
 	})
+	.attr('text-anchor', 'middle')
 	.attr('fill', 'black');
   },
 
+  updateTypes: function(){
+
+      $.each(dataset.nodes, function(i, node1){  
+	    
+            $.each(dataset.nodes, function(i2, node2){
+		 var x = node1.x - node2.x,
+		     y = node1.y - node2.y,
+		     l = Math.sqrt(x * x + y * y),
+		     r = node1.r + node2.r;
+
+		 if (l < r) {
+                   node1.collisions = node1.name;
+		   node2.collisions = node1.name;
+		 }
+		 else {
+                   node1.collisions = node1.name;
+		 }
+	    });
+	}); 
+
+
+      $.each(dataset.nodes, function(i, node){
+        var collisionList = _.where(dataset.nodes,{collisions: dataset.nodes[i].name});
+        
+	      if (collisionList.length > 0){
+		collisionList.sort(function(a,b){return a.r > b.r}).reverse()
+		collisionList[0].type = collisionList[0].index
+		collisionList[0].fixed = true
+
+	        var i3 = 0;
+
+		while (++i3 < collisionList.length){
+		  collisionList[i3].type = collisionList[0].index
+	          collisionList[i3].fixed = false
+		}
+	      }
+
+      });
+
+  },
+
   update: function(){
+      force.stop();
+
       bubbles.updateScales();
       bubbles.updateAxis();
       var i = -1,
@@ -85,6 +131,11 @@ var bubbles = {
         dataset.nodes[i].x = xScale(dataset.nodes[i].pageLoadTime);
         dataset.nodes[i].y = yScale(dataset.nodes[i].apdex);
       }
+
+      bubbles.updateTypes();
+      bubbles.updateLabels();
+
+      force.start();
   }
 };
   
@@ -101,9 +152,7 @@ $(function(){
       .nodes(dataset.nodes)
       .size([w, h]);
   
-  force.start();
-
-  var svg = d3.select('body')
+  svg = d3.select('body')
       .append('svg')
       .attr('width', w)
       .attr('height', h)
@@ -125,42 +174,6 @@ $(function(){
 	  n = dataset.nodes.length,
 	  o,
 	  group = 0;
-
-
-
-      while (++i < n) {
-        o = dataset.nodes[i];
-	if (o.fixed) continue;
-	c = dataset.nodes[o.type];
-	o.x += (c.x - o.x) * k;
-	o.y += (c.y - o.y) * k;
-	q.visit(markCollisions(o, o.name));
-      }
-
-      i = 0;
-
-      while (++i < n) {
-	var collisionList = [],
-	    i2 = -1;
-        
-	while (++i2 < n){
-          if (dataset.nodes[i2].collisions == dataset.nodes[i].name || dataset.nodes[i2].name == dataset.nodes[i].name) {
-            collisionList.push(dataset.nodes[i2])
-	  } 
-        }
-
-	if (collisionList.length > 0){
-	  collisionList.sort(function(a,b){return a.r > b.r}).reverse()
-	  collisionList[0].fixed = true;
-
-	  var i3 = 0;
-
-	  while (++i3 < collisionList.length){
-            collisionList[i3].type = collisionList[0].index
-            collisionList[i3].fixed = false
-	  }
-	}
-      }
 
       i = 0;
 
@@ -206,32 +219,6 @@ $(function(){
 	    };
         }
 
-	function markCollisions(node, group) {
-	    var r = node.r,
-		nx1 = node.x - r,
-		nx2 = node.x + r,
-		ny1 = node.y - r,
-		ny2 = node.y + r;
-	    return function(quad, x1, y1, x2, y2) {
-	      if (quad.point && (quad.point !== node)) {
-		var x = node.x - quad.point.x,
-		    y = node.y - quad.point.y,
-		    l = Math.sqrt(x * x + y * y),
-		    r = node.r + quad.point.r;
-		if (l < r) {
-		  node.collisions = group
-		  quad.point.collisions = group
-		}
-	      }
-	      return x1 > nx2
-		  || x2 < nx1
-		  || y1 > ny2
-		  || y2 < ny1;
-	    };
-        }
-
-      force.start();
-
   });
 
   
@@ -251,4 +238,12 @@ $(function(){
 	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
 	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
 //	deferedFetch.updateBuildStatusFromTeamCity(dataset);
-});
+
+
+  window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
+  window.setInterval(function(){deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
+  window.setInterval(function(){deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())}, 60000);
+  window.setInterval(function(){deferedFetch.updateBuildStatusFromTeamCity(dataset)}, 30000);
+
+
+})
