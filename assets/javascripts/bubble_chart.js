@@ -75,6 +75,7 @@ var bubbles = {
 
   update: function(){
       bubbles.updateScales();
+      bubbles.updateAxis();
       var i = -1,
           n = dataset.nodes.length;
 
@@ -149,7 +150,7 @@ $(function(){
         }
 
 	if (collisionList.length > 0){
-	  collisionList.sort(function(a,b){a.r - b.r}).reverse()
+	  collisionList.sort(function(a,b){return a.r > b.r}).reverse()
 	  collisionList[0].fixed = true;
 
 	  var i3 = 0;
@@ -173,13 +174,15 @@ $(function(){
       }
 
       svg.selectAll('circle')
+	 .attr('id', function(d) { return d.name; })
 	 .attr('cx', function(d) { return d.x; })
 	 .attr('cy', function(d) { return d.y; })
-	 .attr('r', function(d) { return d.r; });
+	 .attr('r', function(d) { return d.r; })
+	 .style('fill', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green'}});
 
 
 	function collide(node) {
-	    var r = node.r,
+	    var r = node.r + 16,
 		nx1 = node.x - r,
 		nx2 = node.x + r,
 		ny1 = node.y - r,
@@ -229,11 +232,23 @@ $(function(){
 
       force.start();
 
-	deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
-	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
-	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
-//	deferedFetch.updateBuildStatusFromTeamCity(dataset);
   });
 
   
+});
+
+$(function(){
+
+        xAxisGroup = d3.select('svg')
+	               .append('g')
+	               .attr('class', 'axis');
+
+        yAxisGroup = d3.select('svg')
+	               .append('g')
+	               .attr('class', 'axis') 
+
+	deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
+	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
+	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
+//	deferedFetch.updateBuildStatusFromTeamCity(dataset);
 });
