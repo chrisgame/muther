@@ -4,6 +4,8 @@ var startX = 100
 var startY = 100
 var minRadius = 9
 var maxRadius = 300
+var minFontSize = 14
+var maxFontSize = 50
 var defaultApdex = 0
 var defaultPageLoadTime = 0
 var defaultBuildStatus = 'unknown'
@@ -39,6 +41,11 @@ var bubbles = {
                      .range([minRadius, maxRadius])
                      .clamp(true);
 
+    fScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset.nodes, function(d) {return d.r;})])
+                     .range([minFontSize, maxFontSize])
+                     .clamp(true);
+
   },
   updateAxis: function(){
     xAxis = d3.svg.axis()
@@ -56,24 +63,6 @@ var bubbles = {
 
     yAxisGroup.call(yAxis)
               .attr("transform", "translate(" + padding + ",0)");
-  },
-  updateLabels: function(){
-
-    svg.selectAll('text')
-	.data(dataset.nodes)
-        .enter()
-	.append('text')
-        .text(function(d, i){
-	  return formating.prettyText(d.name)
-	})
-	.attr('x', function(d, i){
-	  return d.x;
-	}) 
-	.attr('y', function(d, i){
-	  return d.y;
-	})
-	.attr('text-anchor', 'middle')
-	.attr('fill', 'black');
   },
 
   updateTypes: function(){
@@ -121,19 +110,15 @@ var bubbles = {
       force.stop();
 
       bubbles.updateScales();
-      bubbles.updateAxis();
-      var i = -1,
-          n = dataset.nodes.length;
 
-
-      while (++i < n) {
-        dataset.nodes[i].r = rScale(dataset.nodes[i].uniqueVisitors);
-        dataset.nodes[i].x = xScale(dataset.nodes[i].pageLoadTime);
-        dataset.nodes[i].y = yScale(dataset.nodes[i].apdex);
-      }
+      $.each(dataset.nodes, function(i, node){
+        node.r = rScale(node.uniqueVisitors);
+        node.x = xScale(node.pageLoadTime);
+        node.y = yScale(node.apdex);
+      });
 
       bubbles.updateTypes();
-      bubbles.updateLabels();
+      bubbles.updateAxis();
 
       force.start();
   }
@@ -167,6 +152,15 @@ $(function(){
       .style('fill', 'green')
       .attr('r', function(d) {return d.r - 2});
 
+  svg.selectAll('text')
+      .data(dataset.nodes)
+      .enter().append('svg:text')
+      .text(function(d){ return formating.prettyText(d.name); })
+      .attr('x', function(d){ return d.x; }) 
+      .attr('y', function(d){ return d.y; })
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'black');
+
   force.on('tick', function(e){
       var q = d3.geom.quadtree(dataset.nodes),
 	  k = e.alpha * .1,
@@ -193,6 +187,15 @@ $(function(){
 	 .attr('r', function(d) { return d.r; })
 	 .style('fill', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green'}});
 
+      svg.selectAll('text')
+        .text(function(d){ return formating.prettyText(d.name); })
+	.attr('x', function(d){ return d.x; }) 
+	.attr('y', function(d){ return d.y; })
+	.attr('text-anchor', 'middle')
+	.attr('fill', 'black')
+	.attr('font-size', function(d){ return fScale(d.r)});
+
+      bubbles.updateAxis();
 
 	function collide(node) {
 	    var r = node.r + 16,
