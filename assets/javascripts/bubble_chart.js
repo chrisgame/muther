@@ -111,11 +111,18 @@ var bubbles = {
 
       bubbles.updateScales();
 
-      $.each(dataset.nodes, function(i, node){
-        node.r = rScale(node.uniqueVisitors);
-        node.x = xScale(node.pageLoadTime);
-        node.y = yScale(node.apdex);
-      });
+//      $.each(dataset.nodes, function(i, node){
+//        node.r = rScale(node.uniqueVisitors);
+ //       node.x = xScale(node.pageLoadTime);
+  //      node.y = yScale(node.apdex);
+   //   });
+
+      console.log('Update');
+      console.log('Announcemts Y Axis '+_.where(dataset.nodes, {name: 'announcements'})[0].y+' Apdex '+_.where(dataset.nodes, {name: 'announcements'})[0].apdex)
+
+      if (_.where(dataset.nodes, {name: 'announcements'})[0].y == 35 ){
+      //  debugger;
+      }
 
       bubbles.updateTypes();
       bubbles.updateAxis();
@@ -162,6 +169,11 @@ $(function(){
       .attr('fill', 'black');
 
   force.on('tick', function(e){
+
+      console.log('Tick'); 
+      console.log('Announcemts Y Axis '+_.where(dataset.nodes, {name: 'announcements'})[0].y+' Apdex '+_.where(dataset.nodes, {name: 'announcements'})[0].apdex)
+
+
       var q = d3.geom.quadtree(dataset.nodes),
 	  k = e.alpha * .1,
 	  i = 0,
@@ -169,16 +181,31 @@ $(function(){
 	  o,
 	  group = 0;
 
+     $.each(_.where(dataset.nodes,{fixed: true}), function(i, node){
+        node.r = rScale(node.uniqueVisitors);
+        node.x = xScale(node.pageLoadTime);
+        node.y = yScale(node.apdex);
+     });
+
       i = 0;
 
       while (++i < n) {
-        o = dataset.nodes[i];
-	if (o.fixed) continue;
+        o = dataset.nodes[i];	
+	  if (o.name == 'announcements'){
+	    console.log('Announcements fixed is '+o.fixed)
+	  }
+	if (o.fixed) {
+	  if (o.name == 'announcements'){
+	    console.log('Announcements is fixed')
+	  }
+		continue;
+	}
 	c = dataset.nodes[o.type];
 	o.x += (c.x - o.x) * k;
 	o.y += (c.y - o.y) * k;
 	q.visit(collide(o));
       }
+
 
       svg.selectAll('circle')
 	 .attr('id', function(d) { return d.name; })
