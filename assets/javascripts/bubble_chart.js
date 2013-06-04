@@ -111,12 +111,6 @@ var bubbles = {
 
       bubbles.updateScales();
 
-//      $.each(dataset.nodes, function(i, node){
-//        node.r = rScale(node.uniqueVisitors);
- //       node.x = xScale(node.pageLoadTime);
-  //      node.y = yScale(node.apdex);
-   //   });
-
       console.log('Update');
       console.log('Announcemts Y Axis '+_.where(dataset.nodes, {name: 'announcements'})[0].y+' Apdex '+_.where(dataset.nodes, {name: 'announcements'})[0].apdex)
 
@@ -128,6 +122,23 @@ var bubbles = {
       bubbles.updateAxis();
 
       force.start();
+  },
+
+  debug: function(){
+    var fixedCircles = _.where(dataset.nodes, {fixed: true});
+
+    $('#debug').remove();
+
+    $('body').append('<div id="debug"> </div>');
+
+    var table = $('<table></table>');
+	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th></tr>');
+
+    $.each(dataset.nodes, function(i, node){
+      table.append('<tr><th>'+node.name+'</th><th>'+node.collisions+'</th><th>'+node.x+'</th><th>'+$('#'+node.name).attr('cx')+'</th><th>'+node.y+'</th><th>'+$('#'+node.name).attr('cy')+'</th><tr>');
+    });
+
+    $('#debug').append(table);
   }
 };
   
@@ -212,7 +223,8 @@ $(function(){
 	 .attr('cx', function(d) { return d.x; })
 	 .attr('cy', function(d) { return d.y; })
 	 .attr('r', function(d) { return d.r; })
-	 .style('fill', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green'}});
+	 .style('fill', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green'}})
+	 .call(force.drag);
 
       svg.selectAll('text')
         .text(function(d){ return formating.prettyText(d.name); })
@@ -223,6 +235,7 @@ $(function(){
 	.attr('font-size', function(d){ return fScale(d.r)});
 
       bubbles.updateAxis();
+      bubbles.debug();
 
 	function collide(node) {
 	    var r = node.r + 16,
