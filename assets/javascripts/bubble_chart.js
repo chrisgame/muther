@@ -132,10 +132,10 @@ var bubbles = {
     $('body').append('<div id="debug"> </div>');
 
     var table = $('<table></table>');
-	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th></tr>');
+	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th><th>dataset r</th><th>svg r</tr></tr>');
 
     $.each(dataset.nodes, function(i, node){
-      table.append('<tr><th>'+node.name+'</th><th>'+node.collisions+'</th><th>'+node.x+'</th><th>'+$('#'+node.name).attr('cx')+'</th><th>'+node.y+'</th><th>'+$('#'+node.name).attr('cy')+'</th><tr>');
+      table.append('<tr><td>'+node.name+'</td><td>'+node.collisions+'</td><td>'+node.x+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.y+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.r+'</td><td>'+$('#'+node.name).attr('r')+'</td><tr>');
     });
 
     $('#debug').append(table);
