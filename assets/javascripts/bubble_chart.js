@@ -110,16 +110,8 @@ var bubbles = {
       force.stop();
 
       bubbles.updateScales();
-
-      console.log('Update');
-      console.log('Announcemts Y Axis '+_.where(dataset.nodes, {name: 'announcements'})[0].y+' Apdex '+_.where(dataset.nodes, {name: 'announcements'})[0].apdex)
-
-      if (_.where(dataset.nodes, {name: 'announcements'})[0].y == 35 ){
-      //  debugger;
-      }
-
-      bubbles.updateTypes();
       bubbles.updateAxis();
+      bubbles.updateTypes();
 
       force.start();
   },
