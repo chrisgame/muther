@@ -147,19 +147,15 @@ $(function(){
       .nodes(dataset.nodes)
       .size([w, h]);
   
-  svg = d3.select('body')
+  svg = d3.select('#viz')
       .append('svg')
       .attr('width', w)
       .attr('height', h)
 
-//  svg.append('svg:rect')
-  //    .attr('width', w)
-  //    .attr('height', h);
-
   svg.selectAll('circle')
       .data(dataset.nodes)
       .enter().append('svg:circle')
-      .style('fill', 'green')
+      .attr('class', 'grey-build')
       .attr('r', function(d) {return d.r - 2});
 
   svg.selectAll('text')
@@ -215,7 +211,7 @@ $(function(){
 	 .attr('cx', function(d) { return d.x; })
 	 .attr('cy', function(d) { return d.y; })
 	 .attr('r', function(d) { return d.r; })
-	 .style('fill', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green'}})
+	 .attr('class', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green-build'}})
 	 .call(force.drag);
 
       svg.selectAll('text')
