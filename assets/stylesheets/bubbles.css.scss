@@ -7,7 +7,7 @@ body{
 	  background-image:         linear-gradient(to bottom, #2b2b2b, #303030); /* Chrome 26, Firefox 16+, IE 10+, Opera 12.10+ */
   #viz{
     .red-build{
-      fill: #ff3e3f;
+      fill: #ff3f3e;
     }
     .green-build{
       fill: #b1da4d;
@@ -17,6 +17,10 @@ body{
     }
     .blue{
       fill: blue;
+    }
+    text{
+      fill: black;
+      font-family: helvetica;
     }
     .axis{
       fill: #767676;
