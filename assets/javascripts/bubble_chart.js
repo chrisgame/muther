@@ -2,8 +2,8 @@ var dataset={nodes:[], links:[]}
 var startRadius = 100
 var startX = 100
 var startY = 100
-var minRadius = 9
-var maxRadius = 300
+var minRadius = 5
+var maxRadius = 250
 var minFontSize = 14
 var maxFontSize = 50
 var defaultApdex = 0
@@ -174,7 +174,7 @@ $(function(){
 
 
       var q = d3.geom.quadtree(dataset.nodes),
-	  k = e.alpha * .1,
+	  k = e.alpha * .09,
 	  i = 0,
 	  n = dataset.nodes.length,
 	  o,
@@ -190,14 +190,8 @@ $(function(){
 
       while (++i < n) {
         o = dataset.nodes[i];	
-	  if (o.name == 'announcements'){
-	    console.log('Announcements fixed is '+o.fixed)
-	  }
 	if (o.fixed) {
-	  if (o.name == 'announcements'){
-	    console.log('Announcements is fixed')
-	  }
-		continue;
+	  continue;
 	}
 	c = dataset.nodes[o.type];
 	o.x += (c.x - o.x) * k;
@@ -211,7 +205,10 @@ $(function(){
 	 .attr('cx', function(d) { return d.x; })
 	 .attr('cy', function(d) { return d.y; })
 	 .attr('r', function(d) { return d.r; })
-	 .attr('class', function(d) { if (d.fixed == true) {return 'blue'} else {return 'green-build'}})
+	 .attr('class', function(d) { if (d.buildStatus == 'success') {return 'green-build'} 
+		                      else if (d.buildStatus == 'failure') {return 'red-build'}
+	                              else {return 'grey-build'}})
+//	 .attr('class', function(d) { if (d.fixed == true) {return 'fixed'}})
 	 .call(force.drag);
 
       svg.selectAll('text')
@@ -226,7 +223,7 @@ $(function(){
       bubbles.debug();
 
 	function collide(node) {
-	    var r = node.r + 16,
+	    var r = node.r + maxRadius,
 		nx1 = node.x - r,
 		nx2 = node.x + r,
 		ny1 = node.y - r,
@@ -241,6 +238,8 @@ $(function(){
 		  l = (l - r) / l * .5;
 		  node.px += x * l;
 		  node.py += y * l;
+		  quad.point.px = quad.point.px;
+		  quad.point.py = quad.point.py;
 		}
 	      }
 	      return x1 > nx2
@@ -268,7 +267,7 @@ $(function(){
 	deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
 	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
 	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
-//	deferedFetch.updateBuildStatusFromTeamCity(dataset);
+	deferedFetch.updateBuildStatusFromTeamCity(dataset);
 
 
   window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);

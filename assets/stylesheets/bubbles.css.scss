@@ -15,8 +15,8 @@ body{
     .grey-build{
       fill: darkgrey;
     }
-    .blue{
-      fill: blue;
+    .fixed{
+      stroke: blue;
     }
     text{
       fill: black;
@@ -24,6 +24,11 @@ body{
     }
     .axis{
       fill: #767676;
+
+      path,
+      line{
+        shape-rendering: crispEdges;
+      }
       g{
         fill: #767676;
 	text{
