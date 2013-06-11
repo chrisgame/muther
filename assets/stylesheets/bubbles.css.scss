@@ -19,8 +19,14 @@ body{
       stroke: blue;
     }
     text{
-      fill: black;
       font-family: helvetica;
+      text-anchor: middle;
+    }
+    text.large{
+      fill: black;
+    }
+    text.small{
+      fill: white;
     }
     .axis{
       fill: #767676;

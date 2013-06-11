@@ -164,8 +164,7 @@ $(function(){
       .text(function(d){ return formating.prettyText(d.name); })
       .attr('x', function(d){ return d.x; }) 
       .attr('y', function(d){ return d.y; })
-      .attr('text-anchor', 'middle')
-      .attr('fill', 'black');
+      .attr('class', function(d){ return d.r<100?'small':'large'});
 
   force.on('tick', function(e){
 
@@ -215,8 +214,7 @@ $(function(){
         .text(function(d){ return formating.prettyText(d.name); })
 	.attr('x', function(d){ return d.x; }) 
 	.attr('y', function(d){ return d.y; })
-	.attr('text-anchor', 'middle')
-	.attr('fill', 'black')
+        .attr('class', function(d){ return d.r<100?'small':'large'})
 	.attr('font-size', function(d){ return fScale(d.r)});
 
       bubbles.updateAxis();
@@ -270,10 +268,10 @@ $(function(){
 	deferedFetch.updateBuildStatusFromTeamCity(dataset);
 
 
-  window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
-  window.setInterval(function(){deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
-  window.setInterval(function(){deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())}, 60000);
-  window.setInterval(function(){deferedFetch.updateBuildStatusFromTeamCity(dataset)}, 30000);
+//  window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
+//  window.setInterval(function(){deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
+//  window.setInterval(function(){deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())}, 60000);
+//  window.setInterval(function(){deferedFetch.updateBuildStatusFromTeamCity(dataset)}, 60000);
 
 
 })
