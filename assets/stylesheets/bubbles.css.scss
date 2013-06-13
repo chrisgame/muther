@@ -29,17 +29,14 @@ body{
       fill: white;
     }
     .axis{
-      fill: #767676;
 
       path,
       line{
         shape-rendering: crispEdges;
-      }
-      g{
         fill: #767676;
-	text{
-	  fill: #767676;
-	}
+      }
+      text{
+	fill: #767676;
       }
     }
   }

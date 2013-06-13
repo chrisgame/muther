@@ -32,7 +32,7 @@ var bubbles = {
                      .clamp(true);
 
     yScale = d3.scale.linear()
-                     .domain([0, d3.max(dataset.nodes, function(d) {return d.apdex;})])
+                     .domain([0, d3.max(dataset.nodes, function(d) {return d.apdex;}) + 0.4])
                      .range([padding, h - padding])
                      .clamp(true);
 
@@ -67,6 +67,10 @@ var bubbles = {
 
   updateTypes: function(){
 
+      var defObj = $.Deferred();
+      
+     // dataset.nodes.sort(function(a,b){return a.r > b.r}).reverse();
+      
       $.each(dataset.nodes, function(i, node1){  
 	    
             $.each(dataset.nodes, function(i2, node2){
@@ -76,44 +80,52 @@ var bubbles = {
 		     r = node1.r + node2.r;
 
 		 if (l < r) {
-                   node1.collisions = node1.name;
 		   node2.collisions = node1.name;
-		 }
-		 else {
-                   node1.collisions = node1.name;
 		 }
 	    });
 	}); 
-
 
       $.each(dataset.nodes, function(i, node){
         var collisionList = _.where(dataset.nodes,{collisions: dataset.nodes[i].name});
         
 	      if (collisionList.length > 0){
-		collisionList.sort(function(a,b){return a.r > b.r}).reverse()
-		collisionList[0].type = collisionList[0].index
-		collisionList[0].fixed = true
+		collisionList.sort(function(a,b){return a.r > b.r}).reverse();
+		collisionList[0].type = collisionList[0].index;
+		collisionList[0].fixed = true;
 
 	        var i3 = 0;
 
 		while (++i3 < collisionList.length){
-		  collisionList[i3].type = collisionList[0].index
-	          collisionList[i3].fixed = false
+		  collisionList[i3].type = collisionList[0].index;
+	          collisionList[i3].fixed = false;
 		}
 	      }
 
+	if (i = dataset.nodes.length){
+	  console.log('resolving');
+	  defObj.resolve();
+	}
+
       });
+
+      return defObj.promise();
 
   },
 
+  resumeForce: function(){
+      console.log('Starting force');
+
+      force.start()
+  },
+
   update: function(){
+      console.log('Stopping force');
+
       force.stop();
 
       bubbles.updateScales();
-      bubbles.updateAxis();
-      bubbles.updateTypes();
+      $.when(bubbles.updateTypes()).then(bubbles.resumeForce());
 
-      force.start();
   },
 
   debug: function(){
@@ -169,8 +181,6 @@ $(function(){
   force.on('tick', function(e){
 
       console.log('Tick'); 
-      console.log('Announcemts Y Axis '+_.where(dataset.nodes, {name: 'announcements'})[0].y+' Apdex '+_.where(dataset.nodes, {name: 'announcements'})[0].apdex)
-
 
       var q = d3.geom.quadtree(dataset.nodes),
 	  k = e.alpha * .09,
@@ -221,6 +231,7 @@ $(function(){
       bubbles.debug();
 
 	function collide(node) {
+
 	    var r = node.r + maxRadius,
 		nx1 = node.x - r,
 		nx2 = node.x + r,
