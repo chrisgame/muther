@@ -12,7 +12,7 @@ var timePoints = {
       console.log('Current Date '+date)
       return date
     }else{
-      console.log('Current Date '+date)
+      console.log('Current Date '+ new Date)
       return new Date;
     };
   },
