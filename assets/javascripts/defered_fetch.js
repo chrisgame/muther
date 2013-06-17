@@ -4,7 +4,6 @@ var deferedFetch = {
     var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset.nodes[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
     $.getJSON(fetchUrl, function(data){
       try{
-        console.log('R '+dataset.nodes[pos].name+' returned '+data.site.unique_visitors); 
         dataset.nodes[pos].uniqueVisitors = parseInt(data.site.unique_visitors);
       }catch(error){
         dataset.nodes[pos].uniqueVisitors = minRadius;        
@@ -17,7 +16,6 @@ var deferedFetch = {
     var fetchUrl = 'http://localhost:3000/google-analytics.json?site='+dataset.nodes[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
     $.getJSON(fetchUrl, function(data){
       try{
-        console.log('R '+dataset.nodes[pos].name+' returned '+data.site.average_page_load_time); 
         dataset.nodes[pos].pageLoadTime = parseFloat(data.site.average_page_load_time);
       }catch(error){
         dataset.nodes[pos].pageLoadTime = defaultPageLoadTime;        
@@ -30,7 +28,6 @@ var deferedFetch = {
     var fetchUrl = 'http://localhost:3000/new-relic.json?site='+dataset.nodes[pos].name+'&startdate='+formating.urlDate(startDate)+'&enddate='+formating.urlDate(endDate);
     $.getJSON(fetchUrl, function(data){
       try{
-        console.log('R '+dataset.nodes[pos].name+' returned '+data.site.apdex); 
         dataset.nodes[pos].apdex = parseFloat(data.site.apdex);
       }catch(error){
         dataset.nodes[pos].apdex = defaultApdex;        
@@ -43,7 +40,6 @@ var deferedFetch = {
     var fetchUrl = 'http://localhost:3000/team-city.json?site='+dataset.nodes[pos].name+'&startdate=2013-01-31T00:00&enddate=2013-02-01T00:00';
     $.getJSON(fetchUrl, function(data){
       try{
-        console.log('R '+dataset.nodes[pos].name+' returned '+data.site.build_status); 
         dataset.nodes[pos].buildStatus = data.site.build_status;
       }catch(error){
         dataset.nodes[pos].buildStatus = defaultBuildStatus;        

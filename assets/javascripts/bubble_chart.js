@@ -32,7 +32,7 @@ var bubbles = {
                      .clamp(true);
 
     yScale = d3.scale.linear()
-                     .domain([0, d3.max(dataset.nodes, function(d) {return d.apdex;}) + 0.4])
+                     .domain([0, d3.max(dataset.nodes, function(d) {return d.apdex;})])
                      .range([padding, h - padding])
                      .clamp(true);
 
@@ -67,9 +67,8 @@ var bubbles = {
 
   updateTypes: function(){
 
+      console.log('Starting to update types');
       var defObj = $.Deferred();
-      
-     // dataset.nodes.sort(function(a,b){return a.r > b.r}).reverse();
       
       $.each(dataset.nodes, function(i, node1){  
 	    
@@ -102,7 +101,7 @@ var bubbles = {
 	      }
 
 	if (i = dataset.nodes.length){
-	  console.log('resolving');
+	  console.log('Finished updating types');
 	  defObj.resolve();
 	}
 
@@ -110,6 +109,28 @@ var bubbles = {
 
       return defObj.promise();
 
+  },
+
+  resetFreeNodes: function(){
+    console.log('Starting to reset free nodes');
+
+    var defObj = $.Deferred();
+    var freeNodes = _.where(dataset.nodes,{fixed: false});
+
+    $.each(freeNodes, function(i, node){
+      console.log('Resetting '+node.name); 
+      node.x = (window.innerWidth/2) - padding;
+      node.px = (window.innerWidth/2) - padding;
+      node.y = window.innerHeight;
+      node.py = window.innerHeight;
+      
+      if (i == freeNodes.length -1){
+	console.log('Finished resetting free nodes');
+	defObj.resolve();
+      }
+    });
+
+    return defObj.promise();
   },
 
   resumeForce: function(){
@@ -124,22 +145,19 @@ var bubbles = {
       force.stop();
 
       bubbles.updateScales();
-      $.when(bubbles.updateTypes()).then(bubbles.resumeForce());
-
+      $.when(bubbles.updateTypes()).then(bubbles.resetFreeNodes()).then(bubbles.resumeForce());
   },
 
   debug: function(){
-    var fixedCircles = _.where(dataset.nodes, {fixed: true});
-
     $('#debug').remove();
 
     $('body').append('<div id="debug"> </div>');
 
     var table = $('<table></table>');
-	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th><th>dataset r</th><th>svg r</tr></tr>');
+	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th><th>dataset r</th><th>svg r</th><th>Fixed</th></tr>');
 
     $.each(dataset.nodes, function(i, node){
-      table.append('<tr><td>'+node.name+'</td><td>'+node.collisions+'</td><td>'+node.x+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.y+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.r+'</td><td>'+$('#'+node.name).attr('r')+'</td><tr>');
+      table.append('<tr><td>'+node.name+'</td><td>'+node.collisions+'</td><td>'+node.x+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.y+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.r+'</td><td>'+$('#'+node.name).attr('r')+'</td><td>'+node.fixed+'</td><tr>');
     });
 
     $('#debug').append(table);
@@ -155,7 +173,7 @@ $(function(){
 
   force = d3.layout.force()
       .gravity(0)
-      .charge(0)
+      .charge(1)
       .nodes(dataset.nodes)
       .size([w, h]);
   
@@ -217,7 +235,6 @@ $(function(){
 	 .attr('class', function(d) { if (d.buildStatus == 'success') {return 'green-build'} 
 		                      else if (d.buildStatus == 'failure') {return 'red-build'}
 	                              else {return 'grey-build'}})
-//	 .attr('class', function(d) { if (d.fixed == true) {return 'fixed'}})
 	 .call(force.drag);
 
       svg.selectAll('text')
