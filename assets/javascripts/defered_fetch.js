@@ -49,6 +49,7 @@ var deferedFetch = {
   },
 
   updateUniqueVisitorsFromGoogleAnalytics: function(dataset, startDate, endDate){
+    console.log('Started Unique Views From Google Analytics') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
         fetchArray.push(deferedFetch.fetchUniqueVisitorsFromGoogleAnalytics(dataset, startDate, endDate, i));
@@ -59,6 +60,7 @@ var deferedFetch = {
   },
 
   updatePageLoadTimeFromGoogleAnalytics: function(dataset, startDate, endDate){
+    console.log('Started Pageload Time From Google Analytics') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
         fetchArray.push(deferedFetch.fetchPageLoadTimeFromGoogleAnalytics(dataset, startDate, endDate, i));
@@ -69,6 +71,7 @@ var deferedFetch = {
   },
 
   updateApdexFromNewRelic: function(dataset, startDate, endDate){
+    console.log('Started Apdex From New Relic') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
         fetchArray.push(deferedFetch.fetchApdexFromNewRelic(dataset, startDate, endDate, i));
@@ -79,6 +82,7 @@ var deferedFetch = {
   },
 
   updateBuildStatusFromTeamCity: function(dataset){
+    console.log('Started Build Status From Team City') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
         fetchArray.push(deferedFetch.fetchBuildStatusFromTeamCity(dataset, i));
