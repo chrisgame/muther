@@ -141,11 +141,11 @@ var bubbles = {
       console.log('Resetting free node '+node.name); 
      // node.x = xScale(node.pageLoadTime);
      node.x = (window.innerWidth/2) - padding;
-     // node.px = (window.innerWidth/2) - padding;
-      node.y = window.innerHeight;
+     node.px = (window.innerWidth/2) - padding;
+     node.y = window.innerHeight;
     //  node.y = yScale(node.apdex);
-    //  node.py = padding;
-      
+     node.py = 0;      
+
       if (i == freeNodes.length -1){
 	console.log('Finished resetting free nodes');
 	defObj.resolve();
