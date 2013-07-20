@@ -65,7 +65,7 @@ var bubbles = {
               .attr("transform", "translate(" + padding + ",0)");
   },
 
-  updateTypes: function(){
+  detectCollisionsAndGroup: function(){
 
       console.log('Starting to update types');
       var defObj = $.Deferred();
@@ -111,6 +111,26 @@ var bubbles = {
 
   },
 
+  setNodes: function(){
+    console.log('Starting to set nodes');
+
+    var defObj = $.Deferred();
+
+    $.each(dataset.nodes, function(i, node){
+      node.r = rScale(node.uniqueVisitors);
+      node.x = xScale(node.pageLoadTime);
+      node.y = yScale(node.apdex);
+    });
+
+
+    if (i == dataset.nodes.length -1){
+      console.log('Finished setting nodes');
+      defObj.resolved();
+    }
+
+    return defObj.resolve();
+  },
+
   resetFreeNodes: function(){
     console.log('Starting to reset free nodes');
 
@@ -118,11 +138,13 @@ var bubbles = {
     var freeNodes = _.where(dataset.nodes,{fixed: false});
 
     $.each(freeNodes, function(i, node){
-      console.log('Resetting '+node.name); 
-      node.x = (window.innerWidth/2) - padding;
-      node.px = (window.innerWidth/2) - padding;
+      console.log('Resetting free node '+node.name); 
+     // node.x = xScale(node.pageLoadTime);
+     node.x = (window.innerWidth/2) - padding;
+     // node.px = (window.innerWidth/2) - padding;
       node.y = window.innerHeight;
-      node.py = window.innerHeight;
+    //  node.y = yScale(node.apdex);
+    //  node.py = padding;
       
       if (i == freeNodes.length -1){
 	console.log('Finished resetting free nodes');
@@ -131,6 +153,49 @@ var bubbles = {
     });
 
     return defObj.promise();
+  },
+
+  resetFixedNodes: function(){
+	  //fixed nodes not moving
+	  console.log('Starting to reset fixed nodes');
+
+	  var defObj = $.Deferred();
+	  var fixedNodes = _.where(dataset.nodes,{fixed: true});
+
+	  $.each(fixedNodes, function(i, node){
+		  console.log('Resetting fixed node '+node.name);
+		  node.r = rScale(node.uniqueVisitors);
+		  node.x = xScale(node.pageLoadTime);
+		  node.y = yScale(node.apdex);
+
+		  if (i == fixedNodes.length -1){
+
+    svg.selectAll('circle')
+		  .transition()
+		  .duration('1000')
+		  .attr('id', function(d) { return d.name; })
+		  .attr('cx', function(d) { return d.x; })
+		  .attr('cy', function(d) { return d.y; })
+		  .attr('r', function(d) { return d.r; })
+		  .attr('class', function(d) { if (d.buildStatus == 'success') {return 'green-build'} 
+			  else if (d.buildStatus == 'failure') {return 'red-build'}
+			  else {return 'grey-build'}})
+
+	  svg.selectAll('text')
+		  .transition()
+		  .duration('1000')
+		  .text(function(d){ return formating.prettyText(d.name); })
+		  .attr('x', function(d){ return d.x; }) 
+		  .attr('y', function(d){ return d.y; })
+		  .attr('class', function(d){ return d.r<100?'small':'large'})
+		  .attr('font-size', function(d){ return fScale(d.r)});
+
+	  console.log('Finished resetting fixed nodes');
+	  defObj.resolve();
+		  }
+	  });
+
+	  return defObj.promise();
   },
 
   resumeForce: function(){
@@ -144,23 +209,43 @@ var bubbles = {
 
       force.stop();
 
-      bubbles.updateScales();
-      $.when(bubbles.updateTypes()).then(bubbles.resetFreeNodes()).then(bubbles.resumeForce());
+      $.when(bubbles.setNodes())
+       .then(bubbles.detectCollisionsAndGroup())
+       .then(bubbles.resetFreeNodes())
+       .then(bubbles.resetFixedNodes())
+       .then(bubbles.resumeForce())
+       .then(bubbles.updateScales())
+       .then(bubbles.updateAxis());
   },
 
-  debug: function(){
-    $('#debug').remove();
+  debugCoordinates: function(){
+    $('#debug-coordinates').remove();
 
-    $('body').append('<div id="debug"> </div>');
+    $('body').append('<div id="debug-coordinates"> </div>');
 
     var table = $('<table></table>');
-	table.append('<tr><th>Name</th><th>Collisions</th><th>x</th><th>cx</th><th>y</th><th>cy</th><th>dataset r</th><th>svg r</th><th>Fixed</th></tr>');
+	  table.append('<tr><th>Name</th><th>Collisions</th><th>dataset x</th><th>px</th><th>cx</th><th>dataset y</th><th>py</th><th>cy</th><th>dataset r</th><th>svg r</th><th>Fixed</th></tr>');
 
     $.each(dataset.nodes, function(i, node){
-      table.append('<tr><td>'+node.name+'</td><td>'+node.collisions+'</td><td>'+node.x+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.y+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.r+'</td><td>'+$('#'+node.name).attr('r')+'</td><td>'+node.fixed+'</td><tr>');
+      table.append('<tr><td>'+node.name+'</td><td>'+node.collisions+'</td><td>'+node.x+'</td><td>'+node.px+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.y+'</td><td>'+node.py+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.r+'</td><td>'+$('#'+node.name).attr('r')+'</td><td>'+node.fixed+'</td><tr>');
     });
 
-    $('#debug').append(table);
+    $('#debug-coordinates').append(table);
+  },
+
+  debugData: function(){
+    $('#debug-data').remove();
+
+    $('body').append('<div id="debug-data"> </div>');
+
+    var table = $('<table></table>');
+	  table.append('<tr><th>Name</th><th>apdex</th><th>cy</th><th>page load time</th><th>cx</th><th>unique visitors</th><th>svg r<th>build status</th><th>Fixed<th></tr>');
+
+    $.each(dataset.nodes, function(i, node){
+      table.append('<tr><td>'+node.name+'</td><td>'+node.apdex+'</td><td>'+$('#'+node.name).attr('cy')+'</td><td>'+node.pageLoadTime+'</td><td>'+$('#'+node.name).attr('cx')+'</td><td>'+node.uniqueVisitors+'</td><td>'+node.r+'</td><td>'+node.buildStatus+'</td><td>'+node.fixed+'</td><tr>');
+    });
+
+    $('#debug-data').append(table);
   }
 };
   
@@ -207,24 +292,19 @@ $(function(){
 	  o,
 	  group = 0;
 
-     $.each(_.where(dataset.nodes,{fixed: true}), function(i, node){
-        node.r = rScale(node.uniqueVisitors);
-        node.x = xScale(node.pageLoadTime);
-        node.y = yScale(node.apdex);
-     });
-
       i = 0;
 
-      while (++i < n) {
-        o = dataset.nodes[i];	
-	if (o.fixed) {
-	  continue;
-	}
-	c = dataset.nodes[o.type];
-	o.x += (c.x - o.x) * k;
-	o.y += (c.y - o.y) * k;
-	q.visit(collide(o));
-      }
+      $.each(dataset.nodes, function(i, o){
+	      if (o.fixed) {
+		      console.log('NOT applying any force to '+o.name);
+	      } else {
+		      console.log('Applying force to '+o.name);
+		      c = dataset.nodes[o.type];
+		      o.x += (c.x - o.x) * k;
+		      o.y += (c.y - o.y) * k;
+		      q.visit(collide(o));
+	      }
+      });
 
 
       svg.selectAll('circle')
@@ -245,7 +325,11 @@ $(function(){
 	.attr('font-size', function(d){ return fScale(d.r)});
 
       bubbles.updateAxis();
-      bubbles.debug();
+      if (urlParams.debug == 'coordinates'){
+        bubbles.debugCoordinates();
+      } else if (urlParams.debug == 'data'){
+        bubbles.debugData();
+      }
 
 	function collide(node) {
 
@@ -290,16 +374,21 @@ $(function(){
 	               .append('g')
 	               .attr('class', 'axis') 
 
-	deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
-	deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday());
-	deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime());
-	deferedFetch.updateBuildStatusFromTeamCity(dataset);
+	bubbles.updateScales();
+
+	$.when(deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday()))
+	.then(deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday()))
+	.then(deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime()))
+//	.then(deferedFetch.updateBuildStatusFromTeamCity(dataset));
 
 
-//  window.setInterval(function(){deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
-//  window.setInterval(function(){deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday())}, 86400000);
-//  window.setInterval(function(){deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime())}, 60000);
-//  window.setInterval(function(){deferedFetch.updateBuildStatusFromTeamCity(dataset)}, 60000);
+	window.setInterval(function(){
+	  $.when(deferedFetch.updateUniqueVisitorsFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday()))
+	  .then(deferedFetch.updatePageLoadTimeFromGoogleAnalytics(dataset, timePoints.startOfYesterday(), timePoints.endOfYesterday()));
+	}, 86400000);
 
-
+       window.setInterval(function(){
+//	  $.when(deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime()))
+//	  .then(deferedFetch.updateBuildStatusFromTeamCity(dataset));
+       }, 60000);
 })

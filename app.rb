@@ -31,7 +31,7 @@ class Muther < Sinatra::Base
     sprockets.append_path File.join(root, 'assets', 'images')
     sprockets.append_path File.join(public_folder, 'assets', 'ext')
 
-    if ENV['RACK_ENV'] != 'offline'
+    unless ENV['RACK_ENV'] != 'production'
       sprockets.js_compressor = YUI::JavaScriptCompressor.new
       sprockets.css_compressor = YUI::CssCompressor.new
     end

@@ -49,6 +49,8 @@ var deferedFetch = {
   },
 
   updateUniqueVisitorsFromGoogleAnalytics: function(dataset, startDate, endDate){
+    
+    var defObj = $.Deferred();
     console.log('###Started Unique Views From Google Analytics') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
@@ -56,10 +58,15 @@ var deferedFetch = {
     };
     $.when.apply($, fetchArray).done(function(){
       console.log('###Finished Unique Views From Google Analytics') 
+      defObj.resolve();
     });
+
+    return defObj.promise();
   },
 
   updatePageLoadTimeFromGoogleAnalytics: function(dataset, startDate, endDate){
+
+    var defObj = $.Deferred();
     console.log('###Started Pageload Time From Google Analytics') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
@@ -67,10 +74,15 @@ var deferedFetch = {
     };
     $.when.apply($, fetchArray).done(function(){
       console.log('###Finished Pageload Time From Google Analytics') 
+      defObj.resolve();
     });
+
+    return defObj.promise();
   },
 
   updateApdexFromNewRelic: function(dataset, startDate, endDate){
+
+    var defObj = $.Deferred();
     console.log('###Started Apdex From New Relic') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
@@ -78,10 +90,15 @@ var deferedFetch = {
     };
     $.when.apply($, fetchArray).done(function(){
       console.log('###Finished Apdex From New Relic') 
+      defObj.resolve();
     });
+
+    return defObj.promise();
   },
 
   updateBuildStatusFromTeamCity: function(dataset){
+
+    var defObj = $.Deferred();
     console.log('###Started Build Status From Team City') 
     var fetchArray = [];
     for (i = 0; i < dataset.nodes.length; i += 1){
@@ -89,6 +106,9 @@ var deferedFetch = {
     };
     $.when.apply($, fetchArray).done(function(){
       console.log('###Finished Build Status From Team City') 
+      defObj.resolve();
     });
+
+    return defObj.promise();
   },
 };
