@@ -167,6 +167,8 @@ var bubbles = {
 		  node.r = rScale(node.uniqueVisitors);
 		  node.x = xScale(node.pageLoadTime);
 		  node.y = yScale(node.apdex);
+      node.px = node.x;
+      node.py = node.y;
 
 		  if (i == fixedNodes.length -1){
 
@@ -388,7 +390,7 @@ $(function(){
 	}, 86400000);
 
        window.setInterval(function(){
-//	  $.when(deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime()))
+	  $.when(deferedFetch.updateApdexFromNewRelic(dataset, timePoints.oneHourAgo(), timePoints.currentDateTime()))
 //	  .then(deferedFetch.updateBuildStatusFromTeamCity(dataset));
        }, 60000);
 })
