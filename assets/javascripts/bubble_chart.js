@@ -142,7 +142,7 @@ var bubbles = {
      // node.x = xScale(node.pageLoadTime);
      node.x = (window.innerWidth/2) - padding;
      node.px = (window.innerWidth/2) - padding;
-     node.y = window.innerHeight;
+     node.y = 0;
     //  node.y = yScale(node.apdex);
      node.py = 0;      
 
