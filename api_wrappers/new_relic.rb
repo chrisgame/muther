@@ -3,12 +3,12 @@ class NewRelic
 
   DATE_FORMAT = "%Y-%m-%dT%H:%m:%SZ"
 
-  def initialize start_date, end_date, config = {}
+  def initialize config = {}, options = {}
     @api_key = config[:api_key]
     @account_id = get_account_id
     @application_id = get_application_id
-    @start_date = start_date
-    @end_date = end_date
+    @start_date = options[:start_date]
+    @end_date = options[:end_date]
   end
 
   def get_account_id 

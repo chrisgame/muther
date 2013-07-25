@@ -3,7 +3,7 @@ class TeamCity
   LIST_BUILDS = '/httpAuth/app/rest/projects/id:'  
   BUILD_STATUS = '/httpAuth/app/rest/builds/buildType:BUILD_TYPE/status'
 
-  def initialize config = {}
+  def initialize config = {}, options = {}
     @base_url = config[:base_url]
     @user_name = config[:user_name]
     @password = config[:password]

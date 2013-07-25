@@ -9,6 +9,7 @@ require_relative './api_wrappers/new_relic'
 require_relative './api_wrappers/google_analytics'
 require_relative './api_wrappers/team_city'
 require_relative './api_wrappers/heroku'
+require_relative './api_wrappers/circle'
 
 class Muther < Sinatra::Base
   if ENV['RACK_ENV'] == 'offline'
@@ -83,12 +84,12 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch_for_site :new_relic, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :new_relic, params[:site].to_sym, json, start_date: start_date, end_date: end_date 
       end
     else
       Jbuilder.encode do |json|
         CONFIG.keys.each do |key|
-          fetch :new_relic, key, start_date, end_date, json
+          fetch :new_relic, key, json, start_date: start_date, end_date: end_date
         end
       end
     end
@@ -101,45 +102,44 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch_for_site :google_analytics, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :google_analytics, params[:site].to_sym, json, start_date: start_date, end_date: end_date
       end
     else
       Jbuilder.encode do |json|
         CONFIG.keys.each do |key|
-          fetch :google_analytics, key, start_date, end_date, json
+          fetch :google_analytics, key, json, start_date: start_date, end_date: end_date
         end
       end
     end
   end
 
   get '/team-city.json' do
-
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        begin
-          return nil if CONFIG[params[:site].to_sym][:team_city][:project_id].nil?
-          puts "Fetching from teamcity for "+CONFIG[params[:site].to_sym][:team_city][:project_id]
-          team_city = TeamCity.new CONFIG[params[:site].to_sym][:team_city]
-          eval("json.site team_city.to_builder")
-        rescue
-          eval("error")
-        end
+        fetch_for_site :team_city, params[:site].to_sym, json 
       end
     else
       Jbuilder.encode do |json|
         CONFIG.keys.each do |key|
-          begin
-            return nil if CONFIG[key][:team_city][:project_id].nil?
-            puts "Fetching from teamcity for "+CONFIG[key][:team_city][:project_id]
-            team_city = TeamCity.new CONFIG[key][:team_city]
-            eval("json.#{key.to_s} team_city.to_builder")
-          rescue
-            eval("json.#{key.to_s}")
-          end
+          fetch :team_city, key, json
         end
       end
     end
   end
+
+  get '/circle.json' do
+    unless params[:site].nil?
+      Jbuilder.encode do |json|
+        fetch_for_site :circle, params[:site].to_sym, json 
+      end
+    else
+      Jbuilder.encode do |json|
+        CONFIG.keys.each do |key|
+          fetch :circle, key, json
+        end
+      end
+    end
+ end
 
   get '/heroku.json' do
     start_date = DateTime.parse(params[:startdate])
@@ -148,12 +148,12 @@ class Muther < Sinatra::Base
 
     unless params[:site].nil?
       Jbuilder.encode do |json|
-        fetch_for_site :heroku, params[:site].to_sym, start_date, end_date, json
+        fetch_for_site :heroku, params[:site].to_sym, json, start_date: start_date, end_date: end_date 
       end
     else
       Jbuilder.encode do |json|
         CONFIG.keys.each do |key|
-          fetch :heroku, key, start_date, end_date, json
+          fetch :heroku, key, json, start_date: start_date, end_date: end_date 
         end
       end
     end
@@ -164,24 +164,24 @@ class Muther < Sinatra::Base
   end
 
   helpers do
-    def fetch source, site, start_date, end_date, json
+    def fetch source, site, json, options={}
       source_class_name = get_class_name(source.to_s)
       begin
         puts "Fetching from "+source.to_s+" for "+site.to_s
         return nil if CONFIG[site][source].nil?
-        source_class = eval("#{source_class_name}.new start_date, end_date, CONFIG[site][source]")
+        source_class = eval("#{source_class_name}.new CONFIG[site][source], options")
         eval("json.#{site.to_s} source_class.to_builder")
       rescue
         eval("json.#{site.to_s}")
       end
     end
 
-    def fetch_for_site source, site, start_date, end_date, json
+    def fetch_for_site source, site, json, options = {}
       source_class_name = get_class_name(source.to_s)
       begin
         puts "Fetching from "+source.to_s+" for "+site.to_s
         return nil if CONFIG[site][source].nil?
-        source_class = eval("#{source_class_name}.new start_date, end_date, CONFIG[site][source]")
+        source_class = eval("#{source_class_name}.new CONFIG[site][source], options")
         eval("json.site source_class.to_builder")
       rescue
         eval("error")

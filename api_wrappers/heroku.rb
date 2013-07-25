@@ -3,9 +3,9 @@ require 'time'
 require 'json'
 
 class Heroku
-  def initialize start_date, end_date, config = {}
-    @start_date = start_date.strftime '%Y/%m/%d %H:%M:%S %z'
-    @end_date = end_date.strftime '%Y/%m/%d %H:%M:%S %z'
+  def initialize config = {}, options = {}
+    @start_date = options[:start_date].strftime '%Y/%m/%d %H:%M:%S %z'
+    @end_date = options[:end_date].strftime '%Y/%m/%d %H:%M:%S %z'
     @api_key = config[:api_key]
     @app_name = config[:app_name]
   end

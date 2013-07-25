@@ -19,9 +19,9 @@ class GoogleAnalytics
     metrics :percentNewVisits
   end
 
-  def initialize start_date, end_date, config = {}
+  def initialize config = {}, options = {}
     @web_property_id = config[:web_property]
-    @date_range = {start_date: start_date, end_date: end_date}
+    @date_range = {start_date: options[:start_date], end_date: options[:end_date]}
    
     Garb::Session.login config[:user_name], config[:password]
     
